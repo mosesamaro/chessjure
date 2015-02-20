@@ -10,10 +10,10 @@ The application currently features move validation and notation parsing. There i
 
 The following still need fixing:
 
-Check analysis
-Checkmate analysis
-Castling
-A basic AI component might be worthwhile
+* Check analysis
+* Checkmate analysis
+* Castling
+* A basic AI component might be worthwhile
 
 To run chessjure, you'll need leiningen. 
 
