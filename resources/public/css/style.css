@@ -1,0 +1,38 @@
+/* some style */
+
+#chessboard{
+    background-image: url("../chessboard.png");
+    background-repeat: no-repeat;
+    height: 640px;
+    width: 640px;
+    border-style: none;
+    margin: 0px;
+    padding: 0px;
+}
+
+.piece {
+    /*;;    border: 1pt solid black;*/
+    border-style: none;
+    margin: 0px;
+    padding: 0px;
+    display: inline-block;
+    font-size: 50pt;
+    height: 80px;
+    width: 80px;
+    left-padding: 10px;
+}
+
+.piece:hover {
+    color: yellow;
+    background-color: yellow;
+    opacity: 0.25;
+}
+
+.chess-row {
+    padding: 0px;
+    margin: 0px;
+    height: 80px;
+}
+
+
+
