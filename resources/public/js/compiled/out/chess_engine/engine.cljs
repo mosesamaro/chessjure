@@ -1,6 +1,4 @@
 (ns chess-engine.engine
-;;  (:use clojure.core.strint)
-;;  (:use clojure.tools.trace)
   (:require [chess-engine.states :as states]
             [chess-engine.board :as cb]))
 
@@ -107,18 +105,28 @@ it as a piece, column, row or takes"
 ;; Determines if a pawn can move to a square due to the en-passant rule.
 ;; returns true if it can and false if it can't
 (defn is-en-passant? [app-state my-side pos new-pos]
+  (do (print "in is-en-passant " my-side pos new-pos)
   (let [pawn-on-correct-rank (= (js/parseInt (cb/get-row pos)) (passing-pawn-row? my-side))]
+    (print "Pawn on correct rank? " pawn-on-correct-rank)
     (if (or (not pawn-on-correct-rank) (= new-pos nil))
       false 
       (let [
             [up down left right] (get-position-functions my-side app-state)
 
-            left-or-right (if (= (-> curr-pos up left) pos) 
+            left-or-right (if (or (= (-> curr-pos left) nil) (= (cb/get-col (-> curr-pos left)) (cb/get-col pos)))
                             left
                             right)
 
             enemy-side (if (= my-side \w) \b \w)
             enemy-starting-row (if (= my-side \w) \7 \2)
+
+
+            qux (print pos enemy-starting-row)
+            boop (print (-> pos left-or-right))
+            gazonk (print (cb/get-col (-> pos left-or-right)))
+            bar (print "About a quarter through" (cb/make-pos
+                                                (cb/get-col (-> pos left-or-right))
+                                                enemy-starting-row))
 
             ;; Ensure that the previous move had a pawn on the 
             ;; square it would be jumping form.
@@ -128,12 +136,17 @@ it as a piece, column, row or takes"
                                                                 (:board (peek (rest app-state))))
                                            (cb/make-piece enemy-side \p))
 
+            baz (print "About a third through")
+                                               
+                                               
             home-pawn-is-now-gone  (= (cb/get-piece-on-pos (cb/make-pos 
                                                             (cb/get-col
                                                              (-> pos left-or-right)) 
                                                             enemy-starting-row) 
                                                            (:board (peek app-state))) 
                                       :ee)
+
+            foo (print "halfway through")
 
             prev-move-had-empty-adjacent  (= (cb/get-piece-on-pos (cb/make-pos 
                                                                    (cb/get-col (-> pos left-or-right))
@@ -150,7 +163,7 @@ it as a piece, column, row or takes"
          prev-move-had-pawn-at-home
          home-pawn-is-now-gone
          prev-move-had-empty-adjacent
-         adjacent-now-has-enemy-pawn)))))
+         adjacent-now-has-enemy-pawn))))))
 
 (defn is-castling [app-state side pos new-pos]
 )
@@ -276,11 +289,12 @@ and a unit"
       is-free? (partial cb/is-free? app-state)
       is-enemy? (partial cb/is-enemy? app-state side)
 ;;      is-en-passant? (partial is-en-passant? app-state side pos)
-      is-en-passant? (partial is-en-passant? app-state side pos)
+      foo (print "side is : " side piece)
+      partial-is-en-passant? (partial is-en-passant? app-state side pos)
       can-move-diagnal ;;is-enemy-or-en-passant 
        (do 
-                         (print "about to can-move-diagnal")
-                         #(or (is-enemy? %) (is-en-passant? %)))
+                         (print "about to can-move-diagnal" app-state side pos)
+                         #(or (is-enemy? %) (partial-is-en-passant? %)))
 ;;                         #(is-enemy? %)
       center-moves (if starting-square
                      (take 2 (take-while is-free? (path pos up)))
@@ -543,19 +557,20 @@ and a unit"
 ;; that was taken via en-passant. Returns a board.
 (defn remove-pawn-en-passant [app-state a-move]
   (let [pos (:start-pos a-move)
-        side  (cb/get-side pos)
         new-pos (:end-pos a-move)
         piece (:piece a-move)
+        side  (cb/get-side piece)
         ]
     (if (not (= (cb/get-piece piece) \p))
       (:board (peek app-state))
+      (do (print "In remove-pawn-en-passant")
       (if (is-en-passant? app-state side pos new-pos)
         (do (print "printing remove pawn " (cb/make-pos (cb/get-col new-pos) (cb/get-row pos)))
             (set-square
              (cb/make-pos (cb/get-col new-pos) (cb/get-row pos))
              (:board (peek app-state))
              :ee))
-        (:board (peek app-state))))))
+        (:board (peek app-state)))))))
 
 ;; This maintains the :white-king-moved
 ;; and :black-king-moved flags. Necessary for
@@ -609,7 +624,7 @@ and a unit"
                                     :black-king-moved false,
                                     :turn (if (= (:turn (peek app-state)) \w) \b \w)
                                     }))
-                 (print "Move not legal" (:end-pos a-move)))))))))
+                 (print "Move not legal" (:end-pos a-move))))))))
 
 
 
@@ -618,16 +633,3 @@ and a unit"
     (do 
       (if (= a-move nil)
         (move a-move app-state)))))
-
-;;(notation-move "blag" init-app-state)
-;;(notation-move "d4" init-app-state)
-;;(notation-move
-
-;; gotta handle 
-;; move notation
-;; move move-representation
-;; move notation app-state
-;; move move-representation app-state
-;;
-;; Shit
-
