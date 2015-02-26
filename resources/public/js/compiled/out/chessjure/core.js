@@ -41,8 +41,10 @@ return new cljs.core.Keyword(null,"app-state","app-state",-1509963278).cljs$core
 });
 chessjure.core.clickfn = (function clickfn(row_num,col){
 var pos = chessjure.core.make_pos_from_view.call(null,col,row_num);
-if(cljs.core._EQ_.call(null,chessjure.core.get_curr_pos.call(null,cljs.core.deref.call(null,chessjure.core.my_data)),null)){
 var piece = chess_engine.board.get_piece_on_pos.call(null,pos,chessjure.core.get_board.call(null,chessjure.core.my_data));
+var turn = new cljs.core.Keyword(null,"turn","turn",75759344).cljs$core$IFn$_invoke$arity$1(cljs.core.peek.call(null,chessjure.core.get_app_state.call(null,chessjure.core.my_data)));
+var same_side_piece_on_pos = ((cljs.core._EQ_.call(null,chess_engine.board.get_side.call(null,piece),turn))?true:false);
+if(cljs.core._EQ_.call(null,chessjure.core.get_curr_pos.call(null,cljs.core.deref.call(null,chessjure.core.my_data)),null)){
 cljs.core.print.call(null,"Pos is : ",pos);
 
 cljs.core.print.call(null,"piece is : ",piece);
@@ -57,9 +59,15 @@ return cljs.core.print.call(null," :curr-selected is ",new cljs.core.Keyword(nul
 } else {
 var new_app_state = chess_engine.engine.move.call(null,new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null,"start-pos","start-pos",668789086),chessjure.core.get_curr_pos.call(null,cljs.core.deref.call(null,chessjure.core.my_data)),new cljs.core.Keyword(null,"piece","piece",1396691784),new cljs.core.Keyword(null,"piece","piece",1396691784).cljs$core$IFn$_invoke$arity$1(new cljs.core.Keyword(null,"curr-selected","curr-selected",205645293).cljs$core$IFn$_invoke$arity$1(cljs.core.deref.call(null,chessjure.core.my_data))),new cljs.core.Keyword(null,"end-pos","end-pos",-1643883926),chessjure.core.make_pos_from_view.call(null,col,row_num)], null),chessjure.core.get_app_state.call(null,chessjure.core.my_data));
 if(cljs.core._EQ_.call(null,new_app_state,null)){
+if(same_side_piece_on_pos){
+cljs.core.print.call(null,"Selecting a new current");
+
+return cljs.core.swap_BANG_.call(null,chessjure.core.my_data,cljs.core.assoc,new cljs.core.Keyword(null,"curr-selected","curr-selected",205645293),new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"pos","pos",-864607220),pos,new cljs.core.Keyword(null,"piece","piece",1396691784),piece], null));
+} else {
 cljs.core.print.call(null,"move not legal");
 
 return cljs.core.swap_BANG_.call(null,chessjure.core.my_data,cljs.core.assoc,new cljs.core.Keyword(null,"curr-selected","curr-selected",205645293),new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"pos","pos",-864607220),null,new cljs.core.Keyword(null,"piece","piece",1396691784),null], null));
+}
 } else {
 cljs.core.swap_BANG_.call(null,chessjure.core.my_data,cljs.core.assoc,new cljs.core.Keyword(null,"app-state","app-state",-1509963278),new_app_state);
 
@@ -103,8 +111,8 @@ return chessjure.core.undo.call(null,app_state);
 */
 chessjure.core.board = quiescent.component.call(null,(function (data){
 return React.DOM.div({"className": "chessboard", "id": "chessboard"},sablono.interpreter.interpret.call(null,cljs.core.map.call(null,(function (row,row_num){
-return new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null,"div","div",1057191632),new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"class","class",-2030961996),"chess-row"], null),cljs.core.map.call(null,(function (p1__17511_SHARP_,p2__17512_SHARP_){
-return chessjure.core.position.call(null,p1__17511_SHARP_,row_num,p2__17512_SHARP_,data);
+return new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null,"div","div",1057191632),new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"class","class",-2030961996),"chess-row"], null),cljs.core.map.call(null,(function (p1__17653_SHARP_,p2__17654_SHARP_){
+return chessjure.core.position.call(null,p1__17653_SHARP_,row_num,p2__17654_SHARP_,data);
 }),row,new cljs.core.PersistentVector(null, 8, 5, cljs.core.PersistentVector.EMPTY_NODE, ["A","B","C","D","E","F","G","H"], null))], null);
 }),data,new cljs.core.PersistentVector(null, 8, 5, cljs.core.PersistentVector.EMPTY_NODE, [(8),(7),(6),(5),(4),(3),(2),(1)], null))));
 }));

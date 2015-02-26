@@ -71,38 +71,41 @@
 
 (defn clickfn [row-num col]
   (let 
-      [pos (make-pos-from-view col row-num)]
+      [pos (make-pos-from-view col row-num)
+       piece (cb/get-piece-on-pos pos (get-board my-data))
+       turn (:turn (peek (get-app-state my-data)))
+       same-side-piece-on-pos (if (= (cb/get-side piece) turn) true false)
+       ]
     (do 
       (if (= (get-curr-pos @my-data) nil)
         ;; Here we process what happens when we don't have a position yet
-        (let [piece (cb/get-piece-on-pos pos (get-board my-data))]
               (do 
                 (print "Pos is : " pos)
                 (print "piece is : " piece)
                 (print "Board is : " (get-board my-data))
                 (print (get-curr-pos @my-data))
                 (swap! my-data assoc :curr-selected {:pos pos :piece piece })
-                (print " :curr-selected is " (:curr-selected mydata))))
-               
-        
+                (print " :curr-selected is " (:curr-selected mydata)))
 
-        ;; Here we process what happens when we do have a position
-        (do
-          (let 
-              [new-app-state (ce/move {:start-pos (get-curr-pos @my-data),
-                                                    :piece (:piece (:curr-selected @my-data)),
-                                                    :end-pos (make-pos-from-view col row-num)}
-                                                   (get-app-state my-data))]
-          (do 
-            (if (= new-app-state nil)
+              ;; Here we process what happens when we do have a position
               (do
-                (print "move not legal")
-                (swap! my-data assoc :curr-selected {:pos nil :piece nil}))
-              (do
-                (swap! my-data assoc :app-state new-app-state)
-                (swap! my-data assoc :curr-selected {:pos nil :piece nil}))))))))))
-;;                (print "Here's the whole damn thing : \n test" @my-data))))))))))
-
+                (let 
+                    [new-app-state (ce/move {:start-pos (get-curr-pos @my-data),
+                                             :piece (:piece (:curr-selected @my-data)),
+                                             :end-pos (make-pos-from-view col row-num)}
+                                            (get-app-state my-data))]
+                  (do 
+                    (if (= new-app-state nil)
+                      (if same-side-piece-on-pos
+                          (do 
+                            (print "Selecting a new current")
+                            (swap! my-data assoc :curr-selected {:pos pos :piece piece}))
+                          (do
+                            (print "move not legal")
+                            (swap! my-data assoc :curr-selected {:pos nil :piece nil})))
+                      (do
+                        (swap! my-data assoc :app-state new-app-state)
+                        (swap! my-data assoc :curr-selected {:pos nil :piece nil}))))))))))
 
  (q/defcomponent position 
    "Component representing a chess board position"

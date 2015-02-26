@@ -1,6 +1,4 @@
 (ns chess-engine.engine
-;;  (:use clojure.core.strint)
-;;  (:use clojure.tools.trace)
   (:require [chess-engine.states :as states]
             [chess-engine.board :as cb]))
 
@@ -618,16 +616,3 @@ and a unit"
     (do 
       (if (= a-move nil)
         (move a-move app-state)))))
-
-;;(notation-move "blag" init-app-state)
-;;(notation-move "d4" init-app-state)
-;;(notation-move
-
-;; gotta handle 
-;; move notation
-;; move move-representation
-;; move notation app-state
-;; move move-representation app-state
-;;
-;; Shit
-
