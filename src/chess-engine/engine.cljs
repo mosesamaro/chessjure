@@ -107,26 +107,19 @@ it as a piece, column, row or takes"
 (defn is-en-passant? [app-state my-side pos new-pos]
   (do (print "in is-en-passant " my-side pos new-pos)
   (let [pawn-on-correct-rank (= (js/parseInt (cb/get-row pos)) (passing-pawn-row? my-side))]
-    (print "Pawn on correct rank? " pawn-on-correct-rank)
     (if (or (not pawn-on-correct-rank) (= new-pos nil))
       false 
       (let [
             [up down left right] (get-position-functions my-side app-state)
 
-            left-or-right (if (or (= (-> curr-pos left) nil) (= (cb/get-col (-> curr-pos left)) (cb/get-col pos)))
+            left-or-right (if (and (not (= (-> pos left) nil))
+                                   (= (cb/get-col (-> pos left)) 
+                                      (cb/get-col new-pos)))
                             left
                             right)
 
             enemy-side (if (= my-side \w) \b \w)
             enemy-starting-row (if (= my-side \w) \7 \2)
-
-
-            qux (print pos enemy-starting-row)
-            boop (print (-> pos left-or-right))
-            gazonk (print (cb/get-col (-> pos left-or-right)))
-            bar (print "About a quarter through" (cb/make-pos
-                                                (cb/get-col (-> pos left-or-right))
-                                                enemy-starting-row))
 
             ;; Ensure that the previous move had a pawn on the 
             ;; square it would be jumping form.
@@ -136,17 +129,12 @@ it as a piece, column, row or takes"
                                                                 (:board (peek (rest app-state))))
                                            (cb/make-piece enemy-side \p))
 
-            baz (print "About a third through")
-                                               
-                                               
             home-pawn-is-now-gone  (= (cb/get-piece-on-pos (cb/make-pos 
                                                             (cb/get-col
                                                              (-> pos left-or-right)) 
                                                             enemy-starting-row) 
                                                            (:board (peek app-state))) 
                                       :ee)
-
-            foo (print "halfway through")
 
             prev-move-had-empty-adjacent  (= (cb/get-piece-on-pos (cb/make-pos 
                                                                    (cb/get-col (-> pos left-or-right))
