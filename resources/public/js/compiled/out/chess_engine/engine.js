@@ -81,8 +81,8 @@ return (4);
 }
 });
 chess_engine.engine.get_position_functions = (function get_position_functions(my_side,app_state){
-return cljs.core.map.call(null,(function (p1__17781_SHARP_){
-return cljs.core.partial.call(null,p1__17781_SHARP_,my_side,app_state);
+return cljs.core.map.call(null,(function (p1__14979_SHARP_){
+return cljs.core.partial.call(null,p1__14979_SHARP_,my_side,app_state);
 }),new cljs.core.PersistentVector(null, 4, 5, cljs.core.PersistentVector.EMPTY_NODE, [chess_engine.engine.up,chess_engine.engine.down,chess_engine.engine.left,chess_engine.engine.right], null));
 });
 chess_engine.engine.is_en_passant_QMARK_ = (function is_en_passant_QMARK_(app_state,my_side,pos,new_pos){
@@ -92,11 +92,11 @@ var pawn_on_correct_rank = cljs.core._EQ_.call(null,parseInt(chess_engine.board.
 if((!(pawn_on_correct_rank)) || (cljs.core._EQ_.call(null,new_pos,null))){
 return false;
 } else {
-var vec__17783 = chess_engine.engine.get_position_functions.call(null,my_side,app_state);
-var up = cljs.core.nth.call(null,vec__17783,(0),null);
-var down = cljs.core.nth.call(null,vec__17783,(1),null);
-var left = cljs.core.nth.call(null,vec__17783,(2),null);
-var right = cljs.core.nth.call(null,vec__17783,(3),null);
+var vec__14981 = chess_engine.engine.get_position_functions.call(null,my_side,app_state);
+var up = cljs.core.nth.call(null,vec__14981,(0),null);
+var down = cljs.core.nth.call(null,vec__14981,(1),null);
+var left = cljs.core.nth.call(null,vec__14981,(2),null);
+var right = cljs.core.nth.call(null,vec__14981,(3),null);
 var left_or_right = (((!(cljs.core._EQ_.call(null,left.call(null,pos),null))) && (cljs.core._EQ_.call(null,chess_engine.board.get_col.call(null,left.call(null,pos)),chess_engine.board.get_col.call(null,new_pos))))?left:right);
 var enemy_side = ((cljs.core._EQ_.call(null,my_side,"w"))?"b":"w");
 var enemy_starting_row = ((cljs.core._EQ_.call(null,my_side,"w"))?"7":"2");
@@ -141,22 +141,22 @@ chess_engine.engine.bishop_moves = (function bishop_moves(app_state,unit){
 var pos = new cljs.core.Keyword(null,"pos","pos",-864607220).cljs$core$IFn$_invoke$arity$1(unit);
 var piece = new cljs.core.Keyword(null,"piece","piece",1396691784).cljs$core$IFn$_invoke$arity$1(unit);
 var side = chess_engine.board.get_side.call(null,piece);
-var vec__17785 = chess_engine.engine.get_position_functions.call(null,side,app_state);
-var up = cljs.core.nth.call(null,vec__17785,(0),null);
-var down = cljs.core.nth.call(null,vec__17785,(1),null);
-var left = cljs.core.nth.call(null,vec__17785,(2),null);
-var right = cljs.core.nth.call(null,vec__17785,(3),null);
+var vec__14983 = chess_engine.engine.get_position_functions.call(null,side,app_state);
+var up = cljs.core.nth.call(null,vec__14983,(0),null);
+var down = cljs.core.nth.call(null,vec__14983,(1),null);
+var left = cljs.core.nth.call(null,vec__14983,(2),null);
+var right = cljs.core.nth.call(null,vec__14983,(3),null);
 return cljs.core.concat.call(null,chess_engine.engine.is_free_or_enemy2.call(null,app_state,side,chess_engine.engine.path.call(null,pos,cljs.core.comp.call(null,up,left))),chess_engine.engine.is_free_or_enemy2.call(null,app_state,side,chess_engine.engine.path.call(null,pos,cljs.core.comp.call(null,up,right))),chess_engine.engine.is_free_or_enemy2.call(null,app_state,side,chess_engine.engine.path.call(null,pos,cljs.core.comp.call(null,down,left))),chess_engine.engine.is_free_or_enemy2.call(null,app_state,side,chess_engine.engine.path.call(null,pos,cljs.core.comp.call(null,down,right))));
 });
 chess_engine.engine.rook_moves = (function rook_moves(app_state,unit){
 var pos = new cljs.core.Keyword(null,"pos","pos",-864607220).cljs$core$IFn$_invoke$arity$1(unit);
 var piece = new cljs.core.Keyword(null,"piece","piece",1396691784).cljs$core$IFn$_invoke$arity$1(unit);
 var side = chess_engine.board.get_side.call(null,piece);
-var vec__17787 = chess_engine.engine.get_position_functions.call(null,side,app_state);
-var up = cljs.core.nth.call(null,vec__17787,(0),null);
-var down = cljs.core.nth.call(null,vec__17787,(1),null);
-var left = cljs.core.nth.call(null,vec__17787,(2),null);
-var right = cljs.core.nth.call(null,vec__17787,(3),null);
+var vec__14985 = chess_engine.engine.get_position_functions.call(null,side,app_state);
+var up = cljs.core.nth.call(null,vec__14985,(0),null);
+var down = cljs.core.nth.call(null,vec__14985,(1),null);
+var left = cljs.core.nth.call(null,vec__14985,(2),null);
+var right = cljs.core.nth.call(null,vec__14985,(3),null);
 return cljs.core.concat.call(null,chess_engine.engine.is_free_or_enemy2.call(null,app_state,side,chess_engine.engine.path.call(null,pos,up)),chess_engine.engine.is_free_or_enemy2.call(null,app_state,side,chess_engine.engine.path.call(null,pos,right)),chess_engine.engine.is_free_or_enemy2.call(null,app_state,side,chess_engine.engine.path.call(null,pos,left)),chess_engine.engine.is_free_or_enemy2.call(null,app_state,side,chess_engine.engine.path.call(null,pos,down)));
 });
 chess_engine.engine.queen_moves = (function queen_moves(app_state,unit){
@@ -167,16 +167,16 @@ chess_engine.engine.knight_moves = (function knight_moves(app_state,unit){
 var pos = new cljs.core.Keyword(null,"pos","pos",-864607220).cljs$core$IFn$_invoke$arity$1(unit);
 var piece = new cljs.core.Keyword(null,"piece","piece",1396691784).cljs$core$IFn$_invoke$arity$1(unit);
 var side = chess_engine.board.get_side.call(null,piece);
-var vec__17789 = chess_engine.engine.get_position_functions.call(null,side,app_state);
-var up = cljs.core.nth.call(null,vec__17789,(0),null);
-var down = cljs.core.nth.call(null,vec__17789,(1),null);
-var left = cljs.core.nth.call(null,vec__17789,(2),null);
-var right = cljs.core.nth.call(null,vec__17789,(3),null);
+var vec__14987 = chess_engine.engine.get_position_functions.call(null,side,app_state);
+var up = cljs.core.nth.call(null,vec__14987,(0),null);
+var down = cljs.core.nth.call(null,vec__14987,(1),null);
+var left = cljs.core.nth.call(null,vec__14987,(2),null);
+var right = cljs.core.nth.call(null,vec__14987,(3),null);
 var is_free_or_enemy2 = cljs.core.partial.call(null,chess_engine.engine.is_free_or_enemy2,app_state,side);
-var first_knight_path_elm = ((function (pos,piece,side,vec__17789,up,down,left,right,is_free_or_enemy2){
+var first_knight_path_elm = ((function (pos,piece,side,vec__14987,up,down,left,right,is_free_or_enemy2){
 return (function (dir1,dir2,dir3){
 return cljs.core._conj.call(null,cljs.core.List.EMPTY,cljs.core.first.call(null,chess_engine.engine.path.call(null,pos,cljs.core.comp.call(null,dir1,dir2,dir3))));
-});})(pos,piece,side,vec__17789,up,down,left,right,is_free_or_enemy2))
+});})(pos,piece,side,vec__14987,up,down,left,right,is_free_or_enemy2))
 ;
 return cljs.core.concat.call(null,is_free_or_enemy2.call(null,first_knight_path_elm.call(null,up,up,left)),is_free_or_enemy2.call(null,first_knight_path_elm.call(null,up,up,right)),is_free_or_enemy2.call(null,first_knight_path_elm.call(null,up,right,right)),is_free_or_enemy2.call(null,first_knight_path_elm.call(null,up,left,left)),is_free_or_enemy2.call(null,first_knight_path_elm.call(null,down,down,right)),is_free_or_enemy2.call(null,first_knight_path_elm.call(null,down,down,left)),is_free_or_enemy2.call(null,first_knight_path_elm.call(null,down,right,right)),is_free_or_enemy2.call(null,first_knight_path_elm.call(null,down,left,left)));
 });
@@ -184,11 +184,11 @@ chess_engine.engine.king_moves = (function king_moves(app_state,unit){
 var pos = new cljs.core.Keyword(null,"pos","pos",-864607220).cljs$core$IFn$_invoke$arity$1(unit);
 var piece = new cljs.core.Keyword(null,"piece","piece",1396691784).cljs$core$IFn$_invoke$arity$1(unit);
 var side = chess_engine.board.get_side.call(null,piece);
-var vec__17791 = chess_engine.engine.get_position_functions.call(null,side,app_state);
-var up = cljs.core.nth.call(null,vec__17791,(0),null);
-var down = cljs.core.nth.call(null,vec__17791,(1),null);
-var left = cljs.core.nth.call(null,vec__17791,(2),null);
-var right = cljs.core.nth.call(null,vec__17791,(3),null);
+var vec__14989 = chess_engine.engine.get_position_functions.call(null,side,app_state);
+var up = cljs.core.nth.call(null,vec__14989,(0),null);
+var down = cljs.core.nth.call(null,vec__14989,(1),null);
+var left = cljs.core.nth.call(null,vec__14989,(2),null);
+var right = cljs.core.nth.call(null,vec__14989,(3),null);
 var is_free_or_enemy2 = cljs.core.partial.call(null,chess_engine.engine.is_free_or_enemy2,app_state,side);
 return cljs.core.concat.call(null,is_free_or_enemy2.call(null,cljs.core._conj.call(null,cljs.core.List.EMPTY,cljs.core.first.call(null,chess_engine.engine.path.call(null,pos,up)))),is_free_or_enemy2.call(null,cljs.core._conj.call(null,cljs.core.List.EMPTY,cljs.core.first.call(null,chess_engine.engine.path.call(null,pos,down)))),is_free_or_enemy2.call(null,cljs.core._conj.call(null,cljs.core.List.EMPTY,cljs.core.first.call(null,chess_engine.engine.path.call(null,pos,left)))),is_free_or_enemy2.call(null,cljs.core._conj.call(null,cljs.core.List.EMPTY,cljs.core.first.call(null,chess_engine.engine.path.call(null,pos,right)))),is_free_or_enemy2.call(null,cljs.core._conj.call(null,cljs.core.List.EMPTY,cljs.core.first.call(null,chess_engine.engine.path.call(null,pos,cljs.core.comp.call(null,up,right))))),is_free_or_enemy2.call(null,cljs.core._conj.call(null,cljs.core.List.EMPTY,cljs.core.first.call(null,chess_engine.engine.path.call(null,pos,cljs.core.comp.call(null,down,right))))),is_free_or_enemy2.call(null,cljs.core._conj.call(null,cljs.core.List.EMPTY,cljs.core.first.call(null,chess_engine.engine.path.call(null,pos,cljs.core.comp.call(null,down,left))))),is_free_or_enemy2.call(null,cljs.core._conj.call(null,cljs.core.List.EMPTY,cljs.core.first.call(null,chess_engine.engine.path.call(null,pos,cljs.core.comp.call(null,up,left))))));
 });
@@ -198,11 +198,11 @@ var pos = new cljs.core.Keyword(null,"pos","pos",-864607220).cljs$core$IFn$_invo
 var piece = new cljs.core.Keyword(null,"piece","piece",1396691784).cljs$core$IFn$_invoke$arity$1(unit);
 var side = chess_engine.board.get_side.call(null,piece);
 var starting_square = cljs.core._EQ_.call(null,chess_engine.board.get_row.call(null,pos),((cljs.core._EQ_.call(null,side,"w"))?"2":"7"));
-var vec__17794 = chess_engine.engine.get_position_functions.call(null,side,app_state);
-var up = cljs.core.nth.call(null,vec__17794,(0),null);
-var down = cljs.core.nth.call(null,vec__17794,(1),null);
-var left = cljs.core.nth.call(null,vec__17794,(2),null);
-var right = cljs.core.nth.call(null,vec__17794,(3),null);
+var vec__14992 = chess_engine.engine.get_position_functions.call(null,side,app_state);
+var up = cljs.core.nth.call(null,vec__14992,(0),null);
+var down = cljs.core.nth.call(null,vec__14992,(1),null);
+var left = cljs.core.nth.call(null,vec__14992,(2),null);
+var right = cljs.core.nth.call(null,vec__14992,(3),null);
 var is_free_QMARK_ = cljs.core.partial.call(null,chess_engine.board.is_free_QMARK_,app_state);
 var is_enemy_QMARK_ = cljs.core.partial.call(null,chess_engine.board.is_enemy_QMARK_,app_state,side);
 var foo = cljs.core.print.call(null,"side is : ",side,piece);
@@ -210,16 +210,16 @@ var partial_is_en_passant_QMARK_ = cljs.core.partial.call(null,chess_engine.engi
 var can_move_diagnal = (function (){
 cljs.core.print.call(null,"about to can-move-diagnal",app_state,side,pos);
 
-return ((function (pos,piece,side,starting_square,vec__17794,up,down,left,right,is_free_QMARK_,is_enemy_QMARK_,foo,partial_is_en_passant_QMARK_){
-return (function (p1__17792_SHARP_){
-var or__8030__auto__ = is_enemy_QMARK_.call(null,p1__17792_SHARP_);
+return ((function (pos,piece,side,starting_square,vec__14992,up,down,left,right,is_free_QMARK_,is_enemy_QMARK_,foo,partial_is_en_passant_QMARK_){
+return (function (p1__14990_SHARP_){
+var or__8030__auto__ = is_enemy_QMARK_.call(null,p1__14990_SHARP_);
 if(cljs.core.truth_(or__8030__auto__)){
 return or__8030__auto__;
 } else {
-return partial_is_en_passant_QMARK_.call(null,p1__17792_SHARP_);
+return partial_is_en_passant_QMARK_.call(null,p1__14990_SHARP_);
 }
 });
-;})(pos,piece,side,starting_square,vec__17794,up,down,left,right,is_free_QMARK_,is_enemy_QMARK_,foo,partial_is_en_passant_QMARK_))
+;})(pos,piece,side,starting_square,vec__14992,up,down,left,right,is_free_QMARK_,is_enemy_QMARK_,foo,partial_is_en_passant_QMARK_))
 })()
 ;
 var center_moves = ((starting_square)?cljs.core.take.call(null,(2),cljs.core.take_while.call(null,is_free_QMARK_,chess_engine.engine.path.call(null,pos,up))):cljs.core.take.call(null,(1),cljs.core.take_while.call(null,is_free_QMARK_,chess_engine.engine.path.call(null,pos,up))));
@@ -231,11 +231,11 @@ chess_engine.engine.process_simple_pawn_start = (function process_simple_pawn_st
 var pos = chess_engine.board.make_pos.call(null,cljs.core.first.call(null,tokens),cljs.core.second.call(null,tokens));
 var board = new cljs.core.Keyword(null,"board","board",-1907017633).cljs$core$IFn$_invoke$arity$1(cljs.core.peek.call(null,app_state));
 var turn = new cljs.core.Keyword(null,"turn","turn",75759344).cljs$core$IFn$_invoke$arity$1(cljs.core.peek.call(null,app_state));
-var vec__17796 = chess_engine.engine.get_position_functions.call(null,turn,app_state);
-var up = cljs.core.nth.call(null,vec__17796,(0),null);
-var down = cljs.core.nth.call(null,vec__17796,(1),null);
-var left = cljs.core.nth.call(null,vec__17796,(2),null);
-var right = cljs.core.nth.call(null,vec__17796,(3),null);
+var vec__14994 = chess_engine.engine.get_position_functions.call(null,turn,app_state);
+var up = cljs.core.nth.call(null,vec__14994,(0),null);
+var down = cljs.core.nth.call(null,vec__14994,(1),null);
+var left = cljs.core.nth.call(null,vec__14994,(2),null);
+var right = cljs.core.nth.call(null,vec__14994,(3),null);
 var one_step_back = down.call(null,pos);
 var piece_one_step_back = chess_engine.board.get_piece_on_pos.call(null,one_step_back,new cljs.core.Keyword(null,"board","board",-1907017633).cljs$core$IFn$_invoke$arity$1(cljs.core.peek.call(null,app_state)));
 var two_steps_back = down.call(null,down.call(null,pos));
@@ -253,17 +253,17 @@ return null;
 chess_engine.engine.process_complex_pawn_start = (function process_complex_pawn_start(tokens,res,app_state){
 var board = new cljs.core.Keyword(null,"board","board",-1907017633).cljs$core$IFn$_invoke$arity$1(cljs.core.peek.call(null,app_state));
 var turn = new cljs.core.Keyword(null,"turn","turn",75759344).cljs$core$IFn$_invoke$arity$1(cljs.core.peek.call(null,app_state));
-var vec__17799 = chess_engine.engine.get_position_functions.call(null,turn,app_state);
-var up = cljs.core.nth.call(null,vec__17799,(0),null);
-var down = cljs.core.nth.call(null,vec__17799,(1),null);
-var left = cljs.core.nth.call(null,vec__17799,(2),null);
-var right = cljs.core.nth.call(null,vec__17799,(3),null);
+var vec__14997 = chess_engine.engine.get_position_functions.call(null,turn,app_state);
+var up = cljs.core.nth.call(null,vec__14997,(0),null);
+var down = cljs.core.nth.call(null,vec__14997,(1),null);
+var left = cljs.core.nth.call(null,vec__14997,(2),null);
+var right = cljs.core.nth.call(null,vec__14997,(3),null);
 var col = cljs.core.first.call(null,tokens);
-var vec__17800 = tokens;
-var start_col = cljs.core.nth.call(null,vec__17800,(0),null);
-var _ = cljs.core.nth.call(null,vec__17800,(1),null);
-var end_col = cljs.core.nth.call(null,vec__17800,(2),null);
-var end_row = cljs.core.nth.call(null,vec__17800,(3),null);
+var vec__14998 = tokens;
+var start_col = cljs.core.nth.call(null,vec__14998,(0),null);
+var _ = cljs.core.nth.call(null,vec__14998,(1),null);
+var end_col = cljs.core.nth.call(null,vec__14998,(2),null);
+var end_row = cljs.core.nth.call(null,vec__14998,(3),null);
 var end_pos = chess_engine.board.make_pos.call(null,end_col,end_row);
 var left_or_right = (((chess_engine.board.column_index.call(null,end_col) > chess_engine.board.column_index.call(null,start_col)))?left:right);
 var maybe_start_pos = left_or_right.call(null,down.call(null,end_pos));
@@ -277,8 +277,8 @@ return null;
 });
 chess_engine.engine.process_pawn_start = (function process_pawn_start(tokens,res,app_state){
 
-if(cljs.core.truth_(cljs.core.some.call(null,(function (p1__17801_SHARP_){
-return cljs.core._EQ_.call(null,"x",p1__17801_SHARP_);
+if(cljs.core.truth_(cljs.core.some.call(null,(function (p1__14999_SHARP_){
+return cljs.core._EQ_.call(null,"x",p1__14999_SHARP_);
 }),tokens))){
 return chess_engine.engine.process_complex_pawn_start.call(null,tokens,res,app_state);
 } else {
@@ -318,59 +318,60 @@ return null;
 }
 });
 chess_engine.engine.piece_pos_pos = (function piece_pos_pos(notation,tokens,res,app_state){
-var vec__17804 = cljs.core.map.call(null,(function (p1__17802_SHARP_){
-return new cljs.core.Keyword(null,"token","token",-1211463215).cljs$core$IFn$_invoke$arity$1(p1__17802_SHARP_);
+var vec__15002 = cljs.core.map.call(null,(function (p1__15000_SHARP_){
+return new cljs.core.Keyword(null,"token","token",-1211463215).cljs$core$IFn$_invoke$arity$1(p1__15000_SHARP_);
 }),tokens);
-var piece = cljs.core.nth.call(null,vec__17804,(0),null);
-var start_pos = cljs.core.nth.call(null,vec__17804,(1),null);
-var end_pos = cljs.core.nth.call(null,vec__17804,(2),null);
+var piece = cljs.core.nth.call(null,vec__15002,(0),null);
+var start_pos = cljs.core.nth.call(null,vec__15002,(1),null);
+var end_pos = cljs.core.nth.call(null,vec__15002,(2),null);
 return new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null,"start-pos","start-pos",668789086),start_pos,new cljs.core.Keyword(null,"piece","piece",1396691784),piece,new cljs.core.Keyword(null,"end-pos","end-pos",-1643883926),end_pos], null);
 });
 chess_engine.engine.piece_pos_takes_pos = (function piece_pos_takes_pos(notation,tokens,res,app_state){
-var vec__17807 = cljs.core.map.call(null,(function (p1__17805_SHARP_){
-return new cljs.core.Keyword(null,"token","token",-1211463215).cljs$core$IFn$_invoke$arity$1(p1__17805_SHARP_);
+var vec__15005 = cljs.core.map.call(null,(function (p1__15003_SHARP_){
+return new cljs.core.Keyword(null,"token","token",-1211463215).cljs$core$IFn$_invoke$arity$1(p1__15003_SHARP_);
 }),chess_engine.engine.analyze_notation.call(null,notation));
-var piece = cljs.core.nth.call(null,vec__17807,(0),null);
-var start_pos = cljs.core.nth.call(null,vec__17807,(1),null);
-var takes = cljs.core.nth.call(null,vec__17807,(2),null);
-var end_pos = cljs.core.nth.call(null,vec__17807,(3),null);
+var piece = cljs.core.nth.call(null,vec__15005,(0),null);
+var start_pos = cljs.core.nth.call(null,vec__15005,(1),null);
+var takes = cljs.core.nth.call(null,vec__15005,(2),null);
+var end_pos = cljs.core.nth.call(null,vec__15005,(3),null);
 return new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null,"start-pos","start-pos",668789086),start_pos,new cljs.core.Keyword(null,"piece","piece",1396691784),piece,new cljs.core.Keyword(null,"end-pos","end-pos",-1643883926),end_pos], null);
 });
 chess_engine.engine.find_piece_candidates = (function find_piece_candidates(notation,tokens,res,app_state){
-var vec__17811 = cljs.core.map.call(null,(function (p1__17808_SHARP_){
-return new cljs.core.Keyword(null,"token","token",-1211463215).cljs$core$IFn$_invoke$arity$1(p1__17808_SHARP_);
+var vec__15009 = cljs.core.map.call(null,(function (p1__15006_SHARP_){
+return new cljs.core.Keyword(null,"token","token",-1211463215).cljs$core$IFn$_invoke$arity$1(p1__15006_SHARP_);
 }),tokens);
-var piece_type = cljs.core.nth.call(null,vec__17811,(0),null);
-var end_pos = cljs.core.nth.call(null,vec__17811,(1),null);
+var piece_type = cljs.core.nth.call(null,vec__15009,(0),null);
+var end_pos = cljs.core.nth.call(null,vec__15009,(1),null);
+var foo = cljs.core.print.call(null,"Piece type : ",piece_type," End pos ",end_pos);
 var piece = chess_engine.board.make_piece.call(null,new cljs.core.Keyword(null,"turn","turn",75759344).cljs$core$IFn$_invoke$arity$1(cljs.core.peek.call(null,app_state)),piece_type);
 var maybe_start_pos = cljs.core.into.call(null,cljs.core.PersistentVector.EMPTY,chess_engine.engine.piece_moves.call(null,app_state,new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"piece","piece",1396691784),chess_engine.board.toggle_piece_side.call(null,piece),new cljs.core.Keyword(null,"pos","pos",-864607220),end_pos], null)));
-var matching_start_pos = cljs.core.into.call(null,cljs.core.PersistentVector.EMPTY,cljs.core.filter.call(null,((function (vec__17811,piece_type,end_pos,piece,maybe_start_pos){
-return (function (p1__17809_SHARP_){
-return cljs.core._EQ_.call(null,chess_engine.board.get_piece_on_pos.call(null,p1__17809_SHARP_,new cljs.core.Keyword(null,"board","board",-1907017633).cljs$core$IFn$_invoke$arity$1(cljs.core.peek.call(null,app_state))),piece);
-});})(vec__17811,piece_type,end_pos,piece,maybe_start_pos))
+var matching_start_pos = cljs.core.into.call(null,cljs.core.PersistentVector.EMPTY,cljs.core.filter.call(null,((function (vec__15009,piece_type,end_pos,foo,piece,maybe_start_pos){
+return (function (p1__15007_SHARP_){
+return cljs.core._EQ_.call(null,chess_engine.board.get_piece_on_pos.call(null,p1__15007_SHARP_,new cljs.core.Keyword(null,"board","board",-1907017633).cljs$core$IFn$_invoke$arity$1(cljs.core.peek.call(null,app_state))),piece);
+});})(vec__15009,piece_type,end_pos,foo,piece,maybe_start_pos))
 ,maybe_start_pos));
 return matching_start_pos;
 });
 chess_engine.engine.piece_col_or_row_pos = (function piece_col_or_row_pos(col_or_row_keyword){
 return (function (notation,tokens,res,app_state){
 var get_col_or_row = ((cljs.core._EQ_.call(null,col_or_row_keyword,new cljs.core.Keyword(null,"col","col",-1959363084)))?chess_engine.board.get_col:chess_engine.board.get_row);
-var vec__17816 = cljs.core.map.call(null,((function (get_col_or_row){
-return (function (p1__17812_SHARP_){
-return new cljs.core.Keyword(null,"token","token",-1211463215).cljs$core$IFn$_invoke$arity$1(p1__17812_SHARP_);
+var vec__15014 = cljs.core.map.call(null,((function (get_col_or_row){
+return (function (p1__15010_SHARP_){
+return new cljs.core.Keyword(null,"token","token",-1211463215).cljs$core$IFn$_invoke$arity$1(p1__15010_SHARP_);
 });})(get_col_or_row))
 ,tokens);
-var piece_type = cljs.core.nth.call(null,vec__17816,(0),null);
-var start_col_or_row = cljs.core.nth.call(null,vec__17816,(1),null);
-var end_pos = cljs.core.nth.call(null,vec__17816,(2),null);
-var candidate_positions = chess_engine.engine.find_piece_candidates.call(null,notation,cljs.core.filter.call(null,((function (get_col_or_row,vec__17816,piece_type,start_col_or_row,end_pos){
-return (function (p1__17813_SHARP_){
-return !(cljs.core._EQ_.call(null,new cljs.core.Keyword(null,"type","type",1174270348).cljs$core$IFn$_invoke$arity$1(p1__17813_SHARP_),col_or_row_keyword));
-});})(get_col_or_row,vec__17816,piece_type,start_col_or_row,end_pos))
+var piece_type = cljs.core.nth.call(null,vec__15014,(0),null);
+var start_col_or_row = cljs.core.nth.call(null,vec__15014,(1),null);
+var end_pos = cljs.core.nth.call(null,vec__15014,(2),null);
+var candidate_positions = chess_engine.engine.find_piece_candidates.call(null,notation,cljs.core.filter.call(null,((function (get_col_or_row,vec__15014,piece_type,start_col_or_row,end_pos){
+return (function (p1__15011_SHARP_){
+return !(cljs.core._EQ_.call(null,new cljs.core.Keyword(null,"type","type",1174270348).cljs$core$IFn$_invoke$arity$1(p1__15011_SHARP_),col_or_row_keyword));
+});})(get_col_or_row,vec__15014,piece_type,start_col_or_row,end_pos))
 ,tokens),res,app_state);
-var candidate_positions_on_col_or_row = cljs.core.filter.call(null,((function (get_col_or_row,vec__17816,piece_type,start_col_or_row,end_pos,candidate_positions){
-return (function (p1__17814_SHARP_){
-return cljs.core._EQ_.call(null,get_col_or_row.call(null,p1__17814_SHARP_),start_col_or_row);
-});})(get_col_or_row,vec__17816,piece_type,start_col_or_row,end_pos,candidate_positions))
+var candidate_positions_on_col_or_row = cljs.core.filter.call(null,((function (get_col_or_row,vec__15014,piece_type,start_col_or_row,end_pos,candidate_positions){
+return (function (p1__15012_SHARP_){
+return cljs.core._EQ_.call(null,get_col_or_row.call(null,p1__15012_SHARP_),start_col_or_row);
+});})(get_col_or_row,vec__15014,piece_type,start_col_or_row,end_pos,candidate_positions))
 ,candidate_positions);
 if(cljs.core._EQ_.call(null,cljs.core.count.call(null,candidate_positions_on_col_or_row),(1))){
 return cljs.core.assoc.call(null,res,new cljs.core.Keyword(null,"end-pos","end-pos",-1643883926),end_pos,new cljs.core.Keyword(null,"start-pos","start-pos",668789086),cljs.core.first.call(null,candidate_positions_on_col_or_row));
@@ -382,11 +383,11 @@ return null;
 chess_engine.engine.piece_col_pos = chess_engine.engine.piece_col_or_row_pos.call(null,new cljs.core.Keyword(null,"col","col",-1959363084));
 chess_engine.engine.piece_row_pos = chess_engine.engine.piece_col_or_row_pos.call(null,new cljs.core.Keyword(null,"row","row",-570139521));
 chess_engine.engine.piece_pos = (function piece_pos(notation,tokens,res,app_state){
-var vec__17819 = cljs.core.map.call(null,(function (p1__17817_SHARP_){
-return new cljs.core.Keyword(null,"token","token",-1211463215).cljs$core$IFn$_invoke$arity$1(p1__17817_SHARP_);
+var vec__15017 = cljs.core.map.call(null,(function (p1__15015_SHARP_){
+return new cljs.core.Keyword(null,"token","token",-1211463215).cljs$core$IFn$_invoke$arity$1(p1__15015_SHARP_);
 }),tokens);
-var piece_type = cljs.core.nth.call(null,vec__17819,(0),null);
-var end_pos = cljs.core.nth.call(null,vec__17819,(1),null);
+var piece_type = cljs.core.nth.call(null,vec__15017,(0),null);
+var end_pos = cljs.core.nth.call(null,vec__15017,(1),null);
 var candidate_positions = chess_engine.engine.find_piece_candidates.call(null,notation,tokens,res,app_state);
 if(!(cljs.core._EQ_.call(null,cljs.core.count.call(null,candidate_positions),(1)))){
 return null;
@@ -395,17 +396,17 @@ return cljs.core.assoc.call(null,res,new cljs.core.Keyword(null,"end-pos","end-p
 }
 });
 chess_engine.engine.piece_takes_pos = (function piece_takes_pos(notation,tokens,res,app_state){
-return chess_engine.engine.piece_pos.call(null,cljs.core.into.call(null,cljs.core.PersistentVector.EMPTY,cljs.core.filter.call(null,(function (p1__17820_SHARP_){
-return !(cljs.core._EQ_.call(null,"x",p1__17820_SHARP_));
-}),notation)),cljs.core.into.call(null,cljs.core.PersistentVector.EMPTY,cljs.core.filter.call(null,(function (p1__17821_SHARP_){
-return !(cljs.core._EQ_.call(null,new cljs.core.Keyword(null,"type","type",1174270348).cljs$core$IFn$_invoke$arity$1(p1__17821_SHARP_),new cljs.core.Keyword(null,"takes","takes",-1342283563)));
+return chess_engine.engine.piece_pos.call(null,cljs.core.into.call(null,cljs.core.PersistentVector.EMPTY,cljs.core.filter.call(null,(function (p1__15018_SHARP_){
+return !(cljs.core._EQ_.call(null,"x",p1__15018_SHARP_));
+}),notation)),cljs.core.into.call(null,cljs.core.PersistentVector.EMPTY,cljs.core.filter.call(null,(function (p1__15019_SHARP_){
+return !(cljs.core._EQ_.call(null,new cljs.core.Keyword(null,"type","type",1174270348).cljs$core$IFn$_invoke$arity$1(p1__15019_SHARP_),new cljs.core.Keyword(null,"takes","takes",-1342283563)));
 }),tokens)),res,app_state);
 });
 chess_engine.engine.process_piece_start = (function process_piece_start(notation,res,app_state){
 var tokens = chess_engine.engine.analyze_notation.call(null,notation);
 var type_tokens = cljs.core.map.call(null,((function (tokens){
-return (function (p1__17822_SHARP_){
-return new cljs.core.Keyword(null,"type","type",1174270348).cljs$core$IFn$_invoke$arity$1(p1__17822_SHARP_);
+return (function (p1__15020_SHARP_){
+return new cljs.core.Keyword(null,"type","type",1174270348).cljs$core$IFn$_invoke$arity$1(p1__15020_SHARP_);
 });})(tokens))
 ,tokens);
 var piece = new cljs.core.Keyword(null,"token","token",-1211463215).cljs$core$IFn$_invoke$arity$1(cljs.core.first.call(null,tokens));
@@ -444,7 +445,8 @@ return null;
 chess_engine.engine.chess_notation_to_move = (function chess_notation_to_move(notation,app_state){
 
 var move_description = chess_engine.engine.parse_notation.call(null,notation,app_state);
-return move_description;
+var turn = new cljs.core.Keyword(null,"turn","turn",75759344).cljs$core$IFn$_invoke$arity$1(cljs.core.peek.call(null,app_state));
+return cljs.core.assoc.call(null,move_description,new cljs.core.Keyword(null,"piece","piece",1396691784),chess_engine.board.make_piece.call(null,turn,new cljs.core.Keyword(null,"piece","piece",1396691784).cljs$core$IFn$_invoke$arity$1(move_description)));
 });
 chess_engine.engine.is_in_check = (function is_in_check(notation,app_state){
 return "Takes a notation and an app-state and deciedes whether you're in check";
@@ -497,21 +499,30 @@ return new cljs.core.Keyword(null,"board","board",-1907017633).cljs$core$IFn$_in
 });
 chess_engine.engine.has_king_moved = (function has_king_moved(app_state,a_move){
 if(cljs.core._EQ_.call(null,chess_engine.board.get_piece.call(null,new cljs.core.Keyword(null,"piece","piece",1396691784).cljs$core$IFn$_invoke$arity$1(a_move),"k"))){
-cljs.core.print.call(null,"its a king");
-
-return cljs.core.print.call(null,"its not a king");
+return true;
 } else {
-return null;
+return false;
+}
+});
+chess_engine.engine.make_app_state = (function make_app_state(new_board,app_state){
+if(cljs.core._EQ_.call(null,new_board,null)){
+return cljs.core.print.call(null,"Move not legal in make-app-state");
+} else {
+return cljs.core.conj.call(null,app_state,new cljs.core.PersistentArrayMap(null, 4, [new cljs.core.Keyword(null,"board","board",-1907017633),new_board,new cljs.core.Keyword(null,"white-king-moved","white-king-moved",-1378050283),false,new cljs.core.Keyword(null,"black-king-moved","black-king-moved",-1561041851),false,new cljs.core.Keyword(null,"turn","turn",75759344),((cljs.core._EQ_.call(null,new cljs.core.Keyword(null,"turn","turn",75759344).cljs$core$IFn$_invoke$arity$1(cljs.core.peek.call(null,app_state)),"w"))?"b":"w")], null));
 }
 });
 chess_engine.engine.move = (function() {
 var move = null;
 var move__1 = (function (a_move){
+cljs.core.print.call(null,"In Move");
+
 return move.call(null,a_move,chess_engine.states.init_app_state);
 });
 var move__2 = (function (a_move,app_state){
 var legal_moves = cljs.core.set.call(null,chess_engine.engine.piece_moves.call(null,app_state,new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"pos","pos",-864607220),new cljs.core.Keyword(null,"start-pos","start-pos",668789086).cljs$core$IFn$_invoke$arity$1(a_move),new cljs.core.Keyword(null,"piece","piece",1396691784),new cljs.core.Keyword(null,"piece","piece",1396691784).cljs$core$IFn$_invoke$arity$1(a_move)], null)));
 var turn = new cljs.core.Keyword(null,"turn","turn",75759344).cljs$core$IFn$_invoke$arity$1(cljs.core.peek.call(null,app_state));
+cljs.core.print.call(null,"In Move");
+
 if(!(cljs.core._EQ_.call(null,turn,chess_engine.board.get_side.call(null,new cljs.core.Keyword(null,"piece","piece",1396691784).cljs$core$IFn$_invoke$arity$1(a_move))))){
 return cljs.core.print.call(null,"Wrong turn");
 } else {
@@ -529,7 +540,7 @@ cljs.core.print.call(null,"empty start square ",empty_start_square);
 return chess_engine.engine.set_square.call(null,new cljs.core.Keyword(null,"end-pos","end-pos",-1643883926).cljs$core$IFn$_invoke$arity$1(a_move),empty_start_square,new cljs.core.Keyword(null,"piece","piece",1396691784).cljs$core$IFn$_invoke$arity$1(a_move));
 })()
 ;
-return cljs.core.conj.call(null,app_state,new cljs.core.PersistentArrayMap(null, 4, [new cljs.core.Keyword(null,"board","board",-1907017633),moved_piece,new cljs.core.Keyword(null,"white-king-moved","white-king-moved",-1378050283),false,new cljs.core.Keyword(null,"black-king-moved","black-king-moved",-1561041851),false,new cljs.core.Keyword(null,"turn","turn",75759344),((cljs.core._EQ_.call(null,new cljs.core.Keyword(null,"turn","turn",75759344).cljs$core$IFn$_invoke$arity$1(cljs.core.peek.call(null,app_state)),"w"))?"b":"w")], null));
+return chess_engine.engine.make_app_state.call(null,moved_piece,app_state);
 } else {
 return cljs.core.print.call(null,"Move not legal",new cljs.core.Keyword(null,"end-pos","end-pos",-1643883926).cljs$core$IFn$_invoke$arity$1(a_move));
 }

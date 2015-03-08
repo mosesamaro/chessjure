@@ -64,7 +64,7 @@ cljs.core.print.call(null,"Selecting a new current");
 
 return cljs.core.swap_BANG_.call(null,chessjure.core.my_data,cljs.core.assoc,new cljs.core.Keyword(null,"curr-selected","curr-selected",205645293),new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"pos","pos",-864607220),pos,new cljs.core.Keyword(null,"piece","piece",1396691784),piece], null));
 } else {
-cljs.core.print.call(null,"move not legal");
+cljs.core.print.call(null,"click fn move not legal");
 
 return cljs.core.swap_BANG_.call(null,chessjure.core.my_data,cljs.core.assoc,new cljs.core.Keyword(null,"curr-selected","curr-selected",205645293),new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"pos","pos",-864607220),null,new cljs.core.Keyword(null,"piece","piece",1396691784),null], null));
 }
@@ -107,12 +107,22 @@ return chessjure.core.undo.call(null,app_state);
 })},"undo"));
 }));
 /**
+* Component responsible for reading in chess notation
+*/
+chessjure.core.notation_box = quiescent.component.call(null,(function (app_state){
+return React.DOM.div(null,sablono.interpreter.input.call(null,{"id": "notation-box", "type": chessjure.core.text}),React.DOM.button({"onClick": (function (){
+cljs.core.print.call(null,"In notation box");
+
+return cljs.core.swap_BANG_.call(null,chessjure.core.my_data,cljs.core.assoc,new cljs.core.Keyword(null,"app-state","app-state",-1509963278),chess_engine.engine.move.call(null,chess_engine.engine.chess_notation_to_move.call(null,(document.getElementById("notation-box")["value"]),app_state),app_state));
+})},"submit"));
+}));
+/**
 * 
 */
 chessjure.core.board = quiescent.component.call(null,(function (data){
 return React.DOM.div({"className": "chessboard", "id": "chessboard"},sablono.interpreter.interpret.call(null,cljs.core.map.call(null,(function (row,row_num){
-return new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null,"div","div",1057191632),new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"class","class",-2030961996),"chess-row"], null),cljs.core.map.call(null,(function (p1__17653_SHARP_,p2__17654_SHARP_){
-return chessjure.core.position.call(null,p1__17653_SHARP_,row_num,p2__17654_SHARP_,data);
+return new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null,"div","div",1057191632),new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"class","class",-2030961996),"chess-row"], null),cljs.core.map.call(null,(function (p1__15029_SHARP_,p2__15030_SHARP_){
+return chessjure.core.position.call(null,p1__15029_SHARP_,row_num,p2__15030_SHARP_,data);
 }),row,new cljs.core.PersistentVector(null, 8, 5, cljs.core.PersistentVector.EMPTY_NODE, ["A","B","C","D","E","F","G","H"], null))], null);
 }),data,new cljs.core.PersistentVector(null, 8, 5, cljs.core.PersistentVector.EMPTY_NODE, [(8),(7),(6),(5),(4),(3),(2),(1)], null))));
 }));
@@ -125,7 +135,9 @@ cljs.core.print.call(null,"Rendering the board ",new cljs.core.Keyword(null,"boa
 
 quiescent.render.call(null,chessjure.core.board.call(null,new cljs.core.Keyword(null,"board","board",-1907017633).cljs$core$IFn$_invoke$arity$1(cljs.core.first.call(null,new cljs.core.Keyword(null,"app-state","app-state",-1509963278).cljs$core$IFn$_invoke$arity$1(my_data)))),document.getElementById("board-area"));
 
-return quiescent.render.call(null,chessjure.core.undo_button.call(null,new cljs.core.Keyword(null,"app-state","app-state",-1509963278).cljs$core$IFn$_invoke$arity$1(my_data)),document.getElementById("console"));
+quiescent.render.call(null,chessjure.core.undo_button.call(null,new cljs.core.Keyword(null,"app-state","app-state",-1509963278).cljs$core$IFn$_invoke$arity$1(my_data)),document.getElementById("console"));
+
+return quiescent.render.call(null,chessjure.core.notation_box.call(null,new cljs.core.Keyword(null,"app-state","app-state",-1509963278).cljs$core$IFn$_invoke$arity$1(my_data)),document.getElementById("notation"));
 });
 cljs.core.add_watch.call(null,chessjure.core.my_data,new cljs.core.Keyword("chessjure.core","render","chessjure.core/render",-1403393695),(function (_,___$1,___$2,data){
 return chessjure.core.render.call(null,data);

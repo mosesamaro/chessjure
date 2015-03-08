@@ -386,6 +386,7 @@ and a unit"
 (defn find-piece-candidates [notation tokens res app-state]
       (let [
             [piece-type end-pos] (map #(:token %) tokens)
+            foo (print "Piece type : " piece-type  " End pos "end-pos)
             piece (cb/make-piece (:turn (peek app-state)) piece-type)
             maybe-start-pos (into [] (piece-moves app-state
                                                    {:piece (cb/toggle-piece-side piece) :pos end-pos}))
@@ -514,9 +515,10 @@ and a unit"
 ;; Respon
 (defn chess-notation-to-move [notation app-state]
   "Takes a string containing chess notation, and converts it into a move"
-  (let [move-description (parse-notation notation app-state)]
+  (let [move-description (parse-notation notation app-state)
+        turn (:turn (peek app-state))]
     ;;(print (<< move-discription))))
-    move-description))
+    (assoc move-description :piece (cb/make-piece turn (:piece move-description)))))
 
 ;;(chess-notation-to-move "e4" init-app-state)
 
@@ -565,8 +567,22 @@ and a unit"
 ;; castling
 (defn has-king-moved [app-state a-move]
   (if (= (cb/get-piece (:piece a-move) \k))
-    (do (print "its a king") 
-    (print "its not a king"))))
+    true
+    false))
+
+
+;; Create a new app-state
+(defn make-app-state [new-board app-state]
+  (if (= new-board nil)
+    (print "Move not legal in make-app-state")
+    (conj app-state {
+                     :board new-board,
+                     :white-king-moved false,
+                     :black-king-moved false,
+                     :turn (if (= (:turn (peek app-state)) \w) 
+                             \b 
+                             \w)
+                     })))
   
 ;; Move, top level interface to the chess engine
 ;; takes a move in chess notation format, and an app state. 
@@ -575,13 +591,17 @@ and a unit"
 (defn move 
   ([a-move]
      (do 
+       (print "In Move")
        (move a-move states/init-app-state)))
   ([a-move app-state]
      ;; Actually perform the move.
          (let [legal-moves (set (piece-moves app-state {:pos (:start-pos a-move)
                                                         :piece (:piece a-move) }))
                turn (:turn (peek app-state))
+;;               has-white-king-moved (if (= turn \w)) (has-king-moved
+;;               has-black-king-moved
                ]
+           (print "In Move")
            (if (not (= turn (cb/get-side (:piece a-move))))
              (print "Wrong turn")
              (do 
@@ -606,16 +626,10 @@ and a unit"
                                        (:piece a-move)))
 
                       ]
-                   (conj app-state {
-                                    :board moved-piece,
-                                    :white-king-moved false,
-                                    :black-king-moved false,
-                                    :turn (if (= (:turn (peek app-state)) \w) \b \w)
-                                    }))
+                   (make-app-state moved-piece app-state))
                  (print "Move not legal" (:end-pos a-move))))))))
 
-
-
+                   
 (defn notation-move [notation app-state]
   (let [a-move (parse-notation notation app-state)]
     (do 

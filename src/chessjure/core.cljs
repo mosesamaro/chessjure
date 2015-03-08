@@ -101,7 +101,7 @@
                             (print "Selecting a new current")
                             (swap! my-data assoc :curr-selected {:pos pos :piece piece}))
                           (do
-                            (print "move not legal")
+                            (print "click fn move not legal")
                             (swap! my-data assoc :curr-selected {:pos nil :piece nil})))
                       (do
                         (swap! my-data assoc :app-state new-app-state)
@@ -145,6 +145,25 @@
       [:button
        {:on-click #(undo app-state)} "undo"]])))
 
+(q/defcomponent notation-box
+  "Component responsible for reading in chess notation"
+  [app-state]
+    (html
+     [:div
+      [:input {:id "notation-box" :type text} ]
+      [:button
+       {:on-click #(do 
+                     (print "In notation box")
+                     (swap! my-data assoc :app-state 
+                            (ce/move (ce/chess-notation-to-move
+                                      (aget 
+                                       (.getElementById js/document "notation-box") 
+                                       "value") app-state)
+                                     app-state))
+                     )
+      } "submit"]]))
+       
+
 ;; Chess positions need to know what they are:
 (q/defcomponent board
   [data]
@@ -168,7 +187,10 @@
     (q/render (board (:board (first (:app-state my-data))))
               (.getElementById js/document "board-area"))
     (q/render (undo-button (:app-state my-data))
-              (.getElementById js/document "console"))))
+              (.getElementById js/document "console"))
+    (q/render (notation-box (:app-state my-data))
+              (.getElementById js/document "notation"))))
+
 
 
                  
