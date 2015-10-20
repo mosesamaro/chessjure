@@ -23,8 +23,6 @@ var cpos = new cljs.core.Keyword(null,"curr-selected","curr-selected",205645293)
 if(cljs.core._EQ_.call(null,new cljs.core.Keyword(null,"pos","pos",-864607220).cljs$core$IFn$_invoke$arity$1(cpos),null)){
 return null;
 } else {
-cljs.core.print.call(null,"CPOS Is : ",cpos);
-
 return chess_engine.board.make_keyword.call(null,clojure.string.lower_case.call(null,cljs.core.first.call(null,cljs.core.name.call(null,new cljs.core.Keyword(null,"pos","pos",-864607220).cljs$core$IFn$_invoke$arity$1(cpos)))),cljs.core.second.call(null,cljs.core.name.call(null,new cljs.core.Keyword(null,"pos","pos",-864607220).cljs$core$IFn$_invoke$arity$1(cpos))));
 }
 });
@@ -79,8 +77,6 @@ return cljs.core.swap_BANG_.call(null,chessjure.core.my_data,cljs.core.assoc,new
 * Component representing a chess board position
 */
 chessjure.core.position = quiescent.component.call(null,(function (piece,row_num,col,app_state){
-console.log("In position ",piece,row_num,col);
-
 return React.DOM.span({"className": "piece", "onClick": (function (){
 return cljs.core.apply.call(null,chessjure.core.clickfn,new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [row_num,col], null));
 }), "id": [cljs.core.str(col),cljs.core.str(row_num)].join('')},sablono.interpreter.interpret.call(null,chessjure.core.unicode_pieces.call(null,piece)));
@@ -107,6 +103,13 @@ return chessjure.core.undo.call(null,app_state);
 })},"undo"));
 }));
 /**
+* Component responsible for displaying whose turn it is
+*/
+chessjure.core.turn = quiescent.component.call(null,(function (app_state){
+var attrs15040 = [cljs.core.str("Turn is "),cljs.core.str(cljs.core.get.call(null,new cljs.core.PersistentArrayMap(null, 2, ["w","white","b","black"], null),new cljs.core.Keyword(null,"turn","turn",75759344).cljs$core$IFn$_invoke$arity$1(cljs.core.first.call(null,app_state))))].join('');
+return cljs.core.apply.call(null,React.DOM.div,((cljs.core.map_QMARK_.call(null,attrs15040))?sablono.interpreter.attributes.call(null,attrs15040):null),cljs.core.remove.call(null,cljs.core.nil_QMARK_,((cljs.core.map_QMARK_.call(null,attrs15040))?cljs.core.PersistentVector.EMPTY:new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [sablono.interpreter.interpret.call(null,attrs15040)], null))));
+}));
+/**
 * Component responsible for reading in chess notation
 */
 chessjure.core.notation_box = quiescent.component.call(null,(function (app_state){
@@ -121,8 +124,8 @@ return cljs.core.swap_BANG_.call(null,chessjure.core.my_data,cljs.core.assoc,new
 */
 chessjure.core.board = quiescent.component.call(null,(function (data){
 return React.DOM.div({"className": "chessboard", "id": "chessboard"},sablono.interpreter.interpret.call(null,cljs.core.map.call(null,(function (row,row_num){
-return new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null,"div","div",1057191632),new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"class","class",-2030961996),"chess-row"], null),cljs.core.map.call(null,(function (p1__15029_SHARP_,p2__15030_SHARP_){
-return chessjure.core.position.call(null,p1__15029_SHARP_,row_num,p2__15030_SHARP_,data);
+return new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null,"div","div",1057191632),new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"class","class",-2030961996),"chess-row"], null),cljs.core.map.call(null,(function (p1__15041_SHARP_,p2__15042_SHARP_){
+return chessjure.core.position.call(null,p1__15041_SHARP_,row_num,p2__15042_SHARP_,data);
 }),row,new cljs.core.PersistentVector(null, 8, 5, cljs.core.PersistentVector.EMPTY_NODE, ["A","B","C","D","E","F","G","H"], null))], null);
 }),data,new cljs.core.PersistentVector(null, 8, 5, cljs.core.PersistentVector.EMPTY_NODE, [(8),(7),(6),(5),(4),(3),(2),(1)], null))));
 }));
@@ -137,7 +140,9 @@ quiescent.render.call(null,chessjure.core.board.call(null,new cljs.core.Keyword(
 
 quiescent.render.call(null,chessjure.core.undo_button.call(null,new cljs.core.Keyword(null,"app-state","app-state",-1509963278).cljs$core$IFn$_invoke$arity$1(my_data)),document.getElementById("console"));
 
-return quiescent.render.call(null,chessjure.core.notation_box.call(null,new cljs.core.Keyword(null,"app-state","app-state",-1509963278).cljs$core$IFn$_invoke$arity$1(my_data)),document.getElementById("notation"));
+quiescent.render.call(null,chessjure.core.notation_box.call(null,new cljs.core.Keyword(null,"app-state","app-state",-1509963278).cljs$core$IFn$_invoke$arity$1(my_data)),document.getElementById("notation"));
+
+return quiescent.render.call(null,chessjure.core.turn.call(null,new cljs.core.Keyword(null,"app-state","app-state",-1509963278).cljs$core$IFn$_invoke$arity$1(my_data)),document.getElementById("turn"));
 });
 cljs.core.add_watch.call(null,chessjure.core.my_data,new cljs.core.Keyword("chessjure.core","render","chessjure.core/render",-1403393695),(function (_,___$1,___$2,data){
 return chessjure.core.render.call(null,data);

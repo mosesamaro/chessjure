@@ -12,20 +12,22 @@
 
 
 ;; Used to lex notation
-(defn notation-token [tok]
+(defn notation-token 
   "This function takes a token from a chess notation string, and classifies
 it as a piece, column, row or takes"
+  [tok]
   (cond (contains? cb/valid-pieces tok) {:token tok :type :piece}
         (contains? cb/valid-cols tok) {:token tok :type :col}
         (= \x tok) {:token tok :type :takes}
         (integer? (js/parseInt tok)) {:token tok :type :row}
         :else (str "Error : Couldn't figure out what notation token is " tok)))
 
-(defn lex-notation [notation]
+(defn lex-notation 
   "This function converts all the parts of a chess notation string into lexems where lexems contain a token and type"
+  [notation]
   (map notation-token notation))
  
-;;(prn (lex-notation "exd6"))
+;; (prn (lex-notation "exd6"))
 
 ;; Combines col and row elements that are next to one another
 ;; such that they become position elements, which are easier to 
@@ -277,7 +279,6 @@ and a unit"
       is-free? (partial cb/is-free? app-state)
       is-enemy? (partial cb/is-enemy? app-state side)
 ;;      is-en-passant? (partial is-en-passant? app-state side pos)
-      foo (print "side is : " side piece)
       partial-is-en-passant? (partial is-en-passant? app-state side pos)
       can-move-diagnal ;;is-enemy-or-en-passant 
        (do 

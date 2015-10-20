@@ -16,15 +16,12 @@
 ;; chess app is stored here. It is an atom referencing
 ;; a map containing a list of application states.
 ;; and the piece that is currently selected
-(def my-data (atom {
-                    :app-state states/init-app-state,
-                    :curr-selected {:piece nil :pos nil}
-                    }))
+(def my-data (atom {:app-state states/init-app-state,
+                    :curr-selected {:piece nil :pos nil}}))
 
 ;; Here are our pieces, using unicode characters for pieces
 (def unicode-pieces 
-  { 
-   :ee, \u0020
+  {:ee, \u0020
    :wK, \u2654
    :wQ, \u2655
    :wR, \u2656
@@ -52,8 +49,7 @@
       [cpos (:curr-selected my-data)]
     (if (= (:pos cpos) nil) 
       nil 
-      (do (print "CPOS Is : " cpos)
-          (cb/make-keyword (string/lower-case (first (name (:pos cpos)))) (second (name (:pos cpos))))))))
+      (cb/make-keyword (string/lower-case (first (name (:pos cpos)))) (second (name (:pos cpos)))))))
 
 (defn get-curr-piece 
   [my-data]
@@ -110,18 +106,13 @@
  (q/defcomponent position 
    "Component representing a chess board position"
    [piece row-num col app-state]
-   (do 
-     (.log js/console "In position " piece row-num col)
    (html
     [:span
      {:class "piece" 
       :on-click #(apply clickfn [row-num col])
-      :id (str col row-num)
-      }
-      ;; :on-click
-      (unicode-pieces piece)
-     ]
-   )))
+      :id (str col row-num)}
+     ;; :on-click
+     (unicode-pieces piece)]))
 
 (defn undo [app-state]
   "Function responsible for performing undo"
@@ -130,8 +121,6 @@
     (if (= (count app-state) 1)
       (print "nothing to undo")
       (swap! my-data assoc :app-state new-app-state)))))
-
-
 
 ;;(rest '( {:foo "bar"} {:baz "qux"}))
 
@@ -144,6 +133,12 @@
      [:div
       [:button
        {:on-click #(undo app-state)} "undo"]])))
+
+(q/defcomponent turn
+  "Component responsible for displaying whose turn it is"
+  [app-state]
+  (html
+   [:div (str "Turn is " (get  {"w" "white" "b" "black"} (:turn (first app-state))))]))
 
 (q/defcomponent notation-box
   "Component responsible for reading in chess notation"
@@ -162,7 +157,6 @@
                                      app-state))
                      )
       } "submit"]]))
-       
 
 ;; Chess positions need to know what they are:
 (q/defcomponent board
@@ -174,10 +168,7 @@
     (map (fn [row row-num] [:div
                     {:class "chess-row"}
                   (map #(position %1 row-num %2 data) row ["A" "B" "C" "D" "E" "F" "G" "H"])
-                  ]) data [8 7 6 5 4 3 2 1])
-    ]))
-
-       
+                  ]) data [8 7 6 5 4 3 2 1])]))
 
 (defn render [my-data]
   (do 
@@ -189,7 +180,9 @@
     (q/render (undo-button (:app-state my-data))
               (.getElementById js/document "console"))
     (q/render (notation-box (:app-state my-data))
-              (.getElementById js/document "notation"))))
+              (.getElementById js/document "notation"))
+    (q/render (turn (:app-state my-data))
+              (.getElementById js/document "turn"))))
 
 
 
