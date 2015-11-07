@@ -24,3 +24,4 @@ lein figwheel dev
 Then open up the following link in your browser:
 
 http://localhost:3447
+test
