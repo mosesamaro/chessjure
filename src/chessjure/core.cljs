@@ -66,42 +66,38 @@
   (:app-state @my-data))
 
 (defn clickfn [row-num col]
+  (print "In clickfn")
   (let 
-      [pos (make-pos-from-view col row-num)
+      [_ (print "In beginning of let")
+       pos (make-pos-from-view col row-num)
+       _ (print "Made a position" pos)
        piece (cb/get-piece-on-pos pos (get-board my-data))
        turn (:turn (peek (get-app-state my-data)))
        same-side-piece-on-pos (if (= (cb/get-side piece) turn) true false)
+       _ (print "At the end of the first let")
        ]
-    (do 
-      (if (= (get-curr-pos @my-data) nil)
-        ;; Here we process what happens when we don't have a position yet
-              (do 
-                (print "Pos is : " pos)
-                (print "piece is : " piece)
-                (print "Board is : " (get-board my-data))
-                (print (get-curr-pos @my-data))
-                (swap! my-data assoc :curr-selected {:pos pos :piece piece })
-                (print " :curr-selected is " (:curr-selected mydata)))
+    (if (= (get-curr-pos @my-data) nil)
+      ;; Here we process what happens when we don't have a position yet
+      (do 
+        (print "Pos is : " pos)
+        (print "piece is : " piece)
+        (print "Board is : " (get-board my-data))
+        (print (get-curr-pos @my-data))
+        (swap! my-data assoc :curr-selected {:pos pos :piece piece })
+        (print " :curr-selected is " (:curr-selected my-data)))
 
-              ;; Here we process what happens when we do have a position
-              (do
-                (let 
-                    [new-app-state (ce/move {:start-pos (get-curr-pos @my-data),
-                                             :piece (:piece (:curr-selected @my-data)),
-                                             :end-pos (make-pos-from-view col row-num)}
-                                            (get-app-state my-data))]
-                  (do 
-                    (if (= new-app-state nil)
-                      (if same-side-piece-on-pos
-                          (do 
-                            (print "Selecting a new current")
-                            (swap! my-data assoc :curr-selected {:pos pos :piece piece}))
-                          (do
-                            (print "click fn move not legal")
-                            (swap! my-data assoc :curr-selected {:pos nil :piece nil})))
-                      (do
-                        (swap! my-data assoc :app-state new-app-state)
-                        (swap! my-data assoc :curr-selected {:pos nil :piece nil}))))))))))
+      ;; Here we process what happens when we do have a position
+      (let 
+          [new-app-state (ce/move {:start-pos (get-curr-pos @my-data),
+                                   :piece (:piece (:curr-selected @my-data)),
+                                   :end-pos (make-pos-from-view col row-num)}
+                                  (get-app-state my-data))]
+        (if (= new-app-state nil)
+          (if same-side-piece-on-pos
+            (swap! my-data assoc :curr-selected {:pos pos :piece piece})
+            (swap! my-data assoc :curr-selected {:pos nil :piece nil}))
+          (swap! my-data assoc :app-state     new-app-state
+                               :curr-selected {:pos nil :piece nil}))))))
 
  (q/defcomponent position 
    "Component representing a chess board position"
@@ -140,12 +136,28 @@
   (html
    [:div (str "Turn is " (get  {"w" "white" "b" "black"} (:turn (first app-state))))]))
 
+(defn say-whether-moved
+  [has-moved]
+  (if has-moved
+    "has moved"
+    "has not moved"))
+
+(q/defcomponent king-moved
+  "Component responsible for displaying whether or not the king has moved"
+  [app-state]
+  (html
+   [:div (str "White King " (say-whether-moved
+                             (:white-king-moved (first app-state)))
+              " "
+              "Black King " (say-whether-moved
+                             (:black-king-moved (first app-state))))]))
+
 (q/defcomponent notation-box
   "Component responsible for reading in chess notation"
   [app-state]
     (html
      [:div
-      [:input {:id "notation-box" :type text} ]
+      [:input {:id "notation-box" :type "text"} ]
       [:button
        {:on-click #(do 
                      (print "In notation box")
@@ -154,9 +166,7 @@
                                       (aget 
                                        (.getElementById js/document "notation-box") 
                                        "value") app-state)
-                                     app-state))
-                     )
-      } "submit"]]))
+                                     app-state)))} "submit"]]))
 
 ;; Chess positions need to know what they are:
 (q/defcomponent board
@@ -182,7 +192,9 @@
     (q/render (notation-box (:app-state my-data))
               (.getElementById js/document "notation"))
     (q/render (turn (:app-state my-data))
-              (.getElementById js/document "turn"))))
+              (.getElementById js/document "turn"))
+    (q/render (king-moved (:app-state my-data))
+              (.getElementById js/document "king-moved"))))
 
 
 

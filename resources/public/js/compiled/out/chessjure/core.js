@@ -38,10 +38,15 @@ chessjure.core.get_app_state = (function get_app_state(my_data){
 return new cljs.core.Keyword(null,"app-state","app-state",-1509963278).cljs$core$IFn$_invoke$arity$1(cljs.core.deref.call(null,my_data));
 });
 chessjure.core.clickfn = (function clickfn(row_num,col){
+cljs.core.print.call(null,"In clickfn");
+
+var _ = cljs.core.print.call(null,"In beginning of let");
 var pos = chessjure.core.make_pos_from_view.call(null,col,row_num);
+var ___$1 = cljs.core.print.call(null,"Made a position",pos);
 var piece = chess_engine.board.get_piece_on_pos.call(null,pos,chessjure.core.get_board.call(null,chessjure.core.my_data));
 var turn = new cljs.core.Keyword(null,"turn","turn",75759344).cljs$core$IFn$_invoke$arity$1(cljs.core.peek.call(null,chessjure.core.get_app_state.call(null,chessjure.core.my_data)));
 var same_side_piece_on_pos = ((cljs.core._EQ_.call(null,chess_engine.board.get_side.call(null,piece),turn))?true:false);
+var ___$2 = cljs.core.print.call(null,"At the end of the first let");
 if(cljs.core._EQ_.call(null,chessjure.core.get_curr_pos.call(null,cljs.core.deref.call(null,chessjure.core.my_data)),null)){
 cljs.core.print.call(null,"Pos is : ",pos);
 
@@ -53,23 +58,17 @@ cljs.core.print.call(null,chessjure.core.get_curr_pos.call(null,cljs.core.deref.
 
 cljs.core.swap_BANG_.call(null,chessjure.core.my_data,cljs.core.assoc,new cljs.core.Keyword(null,"curr-selected","curr-selected",205645293),new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"pos","pos",-864607220),pos,new cljs.core.Keyword(null,"piece","piece",1396691784),piece], null));
 
-return cljs.core.print.call(null," :curr-selected is ",new cljs.core.Keyword(null,"curr-selected","curr-selected",205645293).cljs$core$IFn$_invoke$arity$1(chessjure.core.mydata));
+return cljs.core.print.call(null," :curr-selected is ",new cljs.core.Keyword(null,"curr-selected","curr-selected",205645293).cljs$core$IFn$_invoke$arity$1(chessjure.core.my_data));
 } else {
 var new_app_state = chess_engine.engine.move.call(null,new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null,"start-pos","start-pos",668789086),chessjure.core.get_curr_pos.call(null,cljs.core.deref.call(null,chessjure.core.my_data)),new cljs.core.Keyword(null,"piece","piece",1396691784),new cljs.core.Keyword(null,"piece","piece",1396691784).cljs$core$IFn$_invoke$arity$1(new cljs.core.Keyword(null,"curr-selected","curr-selected",205645293).cljs$core$IFn$_invoke$arity$1(cljs.core.deref.call(null,chessjure.core.my_data))),new cljs.core.Keyword(null,"end-pos","end-pos",-1643883926),chessjure.core.make_pos_from_view.call(null,col,row_num)], null),chessjure.core.get_app_state.call(null,chessjure.core.my_data));
 if(cljs.core._EQ_.call(null,new_app_state,null)){
 if(same_side_piece_on_pos){
-cljs.core.print.call(null,"Selecting a new current");
-
 return cljs.core.swap_BANG_.call(null,chessjure.core.my_data,cljs.core.assoc,new cljs.core.Keyword(null,"curr-selected","curr-selected",205645293),new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"pos","pos",-864607220),pos,new cljs.core.Keyword(null,"piece","piece",1396691784),piece], null));
 } else {
-cljs.core.print.call(null,"click fn move not legal");
-
 return cljs.core.swap_BANG_.call(null,chessjure.core.my_data,cljs.core.assoc,new cljs.core.Keyword(null,"curr-selected","curr-selected",205645293),new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"pos","pos",-864607220),null,new cljs.core.Keyword(null,"piece","piece",1396691784),null], null));
 }
 } else {
-cljs.core.swap_BANG_.call(null,chessjure.core.my_data,cljs.core.assoc,new cljs.core.Keyword(null,"app-state","app-state",-1509963278),new_app_state);
-
-return cljs.core.swap_BANG_.call(null,chessjure.core.my_data,cljs.core.assoc,new cljs.core.Keyword(null,"curr-selected","curr-selected",205645293),new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"pos","pos",-864607220),null,new cljs.core.Keyword(null,"piece","piece",1396691784),null], null));
+return cljs.core.swap_BANG_.call(null,chessjure.core.my_data,cljs.core.assoc,new cljs.core.Keyword(null,"app-state","app-state",-1509963278),new_app_state,new cljs.core.Keyword(null,"curr-selected","curr-selected",205645293),new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"pos","pos",-864607220),null,new cljs.core.Keyword(null,"piece","piece",1396691784),null], null));
 }
 }
 });
@@ -106,14 +105,28 @@ return chessjure.core.undo.call(null,app_state);
 * Component responsible for displaying whose turn it is
 */
 chessjure.core.turn = quiescent.component.call(null,(function (app_state){
-var attrs15040 = [cljs.core.str("Turn is "),cljs.core.str(cljs.core.get.call(null,new cljs.core.PersistentArrayMap(null, 2, ["w","white","b","black"], null),new cljs.core.Keyword(null,"turn","turn",75759344).cljs$core$IFn$_invoke$arity$1(cljs.core.first.call(null,app_state))))].join('');
-return cljs.core.apply.call(null,React.DOM.div,((cljs.core.map_QMARK_.call(null,attrs15040))?sablono.interpreter.attributes.call(null,attrs15040):null),cljs.core.remove.call(null,cljs.core.nil_QMARK_,((cljs.core.map_QMARK_.call(null,attrs15040))?cljs.core.PersistentVector.EMPTY:new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [sablono.interpreter.interpret.call(null,attrs15040)], null))));
+var attrs14890 = [cljs.core.str("Turn is "),cljs.core.str(cljs.core.get.call(null,new cljs.core.PersistentArrayMap(null, 2, ["w","white","b","black"], null),new cljs.core.Keyword(null,"turn","turn",75759344).cljs$core$IFn$_invoke$arity$1(cljs.core.first.call(null,app_state))))].join('');
+return cljs.core.apply.call(null,React.DOM.div,((cljs.core.map_QMARK_.call(null,attrs14890))?sablono.interpreter.attributes.call(null,attrs14890):null),cljs.core.remove.call(null,cljs.core.nil_QMARK_,((cljs.core.map_QMARK_.call(null,attrs14890))?cljs.core.PersistentVector.EMPTY:new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [sablono.interpreter.interpret.call(null,attrs14890)], null))));
+}));
+chessjure.core.say_whether_moved = (function say_whether_moved(has_moved){
+if(cljs.core.truth_(has_moved)){
+return "has moved";
+} else {
+return "has not moved";
+}
+});
+/**
+* Component responsible for displaying whether or not the king has moved
+*/
+chessjure.core.king_moved = quiescent.component.call(null,(function (app_state){
+var attrs14891 = [cljs.core.str("White King "),cljs.core.str(chessjure.core.say_whether_moved.call(null,new cljs.core.Keyword(null,"white-king-moved","white-king-moved",-1378050283).cljs$core$IFn$_invoke$arity$1(cljs.core.first.call(null,app_state)))),cljs.core.str(" "),cljs.core.str("Black King "),cljs.core.str(chessjure.core.say_whether_moved.call(null,new cljs.core.Keyword(null,"black-king-moved","black-king-moved",-1561041851).cljs$core$IFn$_invoke$arity$1(cljs.core.first.call(null,app_state))))].join('');
+return cljs.core.apply.call(null,React.DOM.div,((cljs.core.map_QMARK_.call(null,attrs14891))?sablono.interpreter.attributes.call(null,attrs14891):null),cljs.core.remove.call(null,cljs.core.nil_QMARK_,((cljs.core.map_QMARK_.call(null,attrs14891))?cljs.core.PersistentVector.EMPTY:new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [sablono.interpreter.interpret.call(null,attrs14891)], null))));
 }));
 /**
 * Component responsible for reading in chess notation
 */
 chessjure.core.notation_box = quiescent.component.call(null,(function (app_state){
-return React.DOM.div(null,sablono.interpreter.input.call(null,{"id": "notation-box", "type": chessjure.core.text}),React.DOM.button({"onClick": (function (){
+return React.DOM.div(null,sablono.interpreter.input.call(null,{"id": "notation-box", "type": "text"}),React.DOM.button({"onClick": (function (){
 cljs.core.print.call(null,"In notation box");
 
 return cljs.core.swap_BANG_.call(null,chessjure.core.my_data,cljs.core.assoc,new cljs.core.Keyword(null,"app-state","app-state",-1509963278),chess_engine.engine.move.call(null,chess_engine.engine.chess_notation_to_move.call(null,(document.getElementById("notation-box")["value"]),app_state),app_state));
@@ -124,8 +137,8 @@ return cljs.core.swap_BANG_.call(null,chessjure.core.my_data,cljs.core.assoc,new
 */
 chessjure.core.board = quiescent.component.call(null,(function (data){
 return React.DOM.div({"className": "chessboard", "id": "chessboard"},sablono.interpreter.interpret.call(null,cljs.core.map.call(null,(function (row,row_num){
-return new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null,"div","div",1057191632),new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"class","class",-2030961996),"chess-row"], null),cljs.core.map.call(null,(function (p1__15041_SHARP_,p2__15042_SHARP_){
-return chessjure.core.position.call(null,p1__15041_SHARP_,row_num,p2__15042_SHARP_,data);
+return new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null,"div","div",1057191632),new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"class","class",-2030961996),"chess-row"], null),cljs.core.map.call(null,(function (p1__14894_SHARP_,p2__14895_SHARP_){
+return chessjure.core.position.call(null,p1__14894_SHARP_,row_num,p2__14895_SHARP_,data);
 }),row,new cljs.core.PersistentVector(null, 8, 5, cljs.core.PersistentVector.EMPTY_NODE, ["A","B","C","D","E","F","G","H"], null))], null);
 }),data,new cljs.core.PersistentVector(null, 8, 5, cljs.core.PersistentVector.EMPTY_NODE, [(8),(7),(6),(5),(4),(3),(2),(1)], null))));
 }));
@@ -142,7 +155,9 @@ quiescent.render.call(null,chessjure.core.undo_button.call(null,new cljs.core.Ke
 
 quiescent.render.call(null,chessjure.core.notation_box.call(null,new cljs.core.Keyword(null,"app-state","app-state",-1509963278).cljs$core$IFn$_invoke$arity$1(my_data)),document.getElementById("notation"));
 
-return quiescent.render.call(null,chessjure.core.turn.call(null,new cljs.core.Keyword(null,"app-state","app-state",-1509963278).cljs$core$IFn$_invoke$arity$1(my_data)),document.getElementById("turn"));
+quiescent.render.call(null,chessjure.core.turn.call(null,new cljs.core.Keyword(null,"app-state","app-state",-1509963278).cljs$core$IFn$_invoke$arity$1(my_data)),document.getElementById("turn"));
+
+return quiescent.render.call(null,chessjure.core.king_moved.call(null,new cljs.core.Keyword(null,"app-state","app-state",-1509963278).cljs$core$IFn$_invoke$arity$1(my_data)),document.getElementById("king-moved"));
 });
 cljs.core.add_watch.call(null,chessjure.core.my_data,new cljs.core.Keyword("chessjure.core","render","chessjure.core/render",-1403393695),(function (_,___$1,___$2,data){
 return chessjure.core.render.call(null,data);

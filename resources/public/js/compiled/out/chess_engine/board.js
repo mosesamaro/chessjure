@@ -1,7 +1,6 @@
 // Compiled by ClojureScript 0.0-2511
 goog.provide('chess_engine.board');
 goog.require('cljs.core');
-goog.require('chess_engine.states');
 chess_engine.board.valid_pieces = new cljs.core.PersistentHashSet(null, new cljs.core.PersistentArrayMap(null, 5, ["B",null,"K",null,"N",null,"Q",null,"R",null], null), null);
 chess_engine.board.valid_cols = new cljs.core.PersistentHashSet(null, new cljs.core.PersistentArrayMap(null, 8, ["a",null,"b",null,"c",null,"d",null,"e",null,"f",null,"g",null,"h",null], null), null);
 chess_engine.board.valid_rows = cljs.core.set.call(null,cljs.core.range.call(null,(1),(9)));

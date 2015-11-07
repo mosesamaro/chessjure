@@ -1,7 +1,7 @@
 goog.addDependency("base.js", ['goog'], []);
 goog.addDependency("../cljs/core.js", ['cljs.core'], ['goog.string', 'goog.object', 'goog.string.StringBuffer', 'goog.array']);
 goog.addDependency("../chess_engine/states.js", ['chess_engine.states'], ['cljs.core']);
-goog.addDependency("../chess_engine/board.js", ['chess_engine.board'], ['cljs.core', 'chess_engine.states']);
+goog.addDependency("../chess_engine/board.js", ['chess_engine.board'], ['cljs.core']);
 goog.addDependency("../chess_engine/engine.js", ['chess_engine.engine'], ['cljs.core', 'chess_engine.states', 'chess_engine.board']);
 goog.addDependency("../clojure/set.js", ['clojure.set'], ['cljs.core']);
 goog.addDependency("../clojure/string.js", ['clojure.string'], ['goog.string', 'cljs.core', 'goog.string.StringBuffer']);

@@ -1,5 +1,4 @@
-(ns chess-engine.board
-  (:require [chess-engine.states :as states]))
+(ns chess-engine.board)
 
 ;; The board representation, and associated functions
 

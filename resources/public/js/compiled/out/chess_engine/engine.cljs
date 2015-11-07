@@ -71,22 +71,12 @@ it as a piece, column, row or takes"
         (step-forward pos)
         (step-backward pos))))))
 
-;; Create the position modification functions
+;; Create the position modification functions, these each take two functions
+;; for what to do when white and black.
 (def up (step cb/inc-row cb/dec-row))
 (def down (step cb/dec-row cb/inc-row))
 (def left (step cb/dec-col cb/inc-col))
 (def right (step cb/inc-col cb/dec-col))
-
-;; Function which moves in a given direction, by repeatedly 
-;; executing some function, as long as the squares around it 
-;; are empty and on the board. Returns all squares which are
-;; empty or contain a piece of the opposite faction
-;; (defn path
-;;   ([pos app-state step]
-;;   (path pos app-state step []))
-;;   ([pos app-state step res]
-;;   (let [steps (take 7 (rest (iterate step pos)))]
-;;     steps)))
 
 ;; This function retrieves all possible positions, up to 7
 ;; for a given step, where a step is a position modification
@@ -107,56 +97,54 @@ it as a piece, column, row or takes"
 ;; Determines if a pawn can move to a square due to the en-passant rule.
 ;; returns true if it can and false if it can't
 (defn is-en-passant? [app-state my-side pos new-pos]
-  (do (print "in is-en-passant " my-side pos new-pos)
-  (let [pawn-on-correct-rank (= (js/parseInt (cb/get-row pos)) (passing-pawn-row? my-side))]
+  (print "In en-passant")
+  (let [current-row          (cb/get-row pos)
+        pawn-on-correct-rank (= (js/parseInt current-row)
+                                (passing-pawn-row? my-side))]
+    ;; Sanity check, if we're not on the correct rank for en-passant to occur,
+    ;; just return false immediately
     (if (or (not pawn-on-correct-rank) (= new-pos nil))
       false 
-      (let [
-            [up down left right] (get-position-functions my-side app-state)
-
-            left-or-right (if (and (not (= (-> pos left) nil))
-                                   (= (cb/get-col (-> pos left)) 
-                                      (cb/get-col new-pos)))
-                            left
-                            right)
-
-            enemy-side (if (= my-side \w) \b \w)
-            enemy-starting-row (if (= my-side \w) \7 \2)
-
-            ;; Ensure that the previous move had a pawn on the 
-            ;; square it would be jumping form.
-            prev-move-had-pawn-at-home  (= (cb/get-piece-on-pos (cb/make-pos 
-                                                                 (cb/get-col (-> pos left-or-right))
-                                                                 enemy-starting-row)
-                                                                (:board (peek (rest app-state))))
-                                           (cb/make-piece enemy-side \p))
-
-            home-pawn-is-now-gone  (= (cb/get-piece-on-pos (cb/make-pos 
-                                                            (cb/get-col
-                                                             (-> pos left-or-right)) 
-                                                            enemy-starting-row) 
-                                                           (:board (peek app-state))) 
-                                      :ee)
-
-            prev-move-had-empty-adjacent  (= (cb/get-piece-on-pos (cb/make-pos 
-                                                                   (cb/get-col (-> pos left-or-right))
-                                                                   (cb/get-row pos))
-                                                                  (:board (peek (rest app-state))))
+      (let [[up down left right]          (get-position-functions my-side app-state)
+            left-or-right                 (if (and (not (= (-> pos left) nil))
+                                                   (= (cb/get-col (-> pos left)) 
+                                                      (cb/get-col new-pos)))
+                                            left
+                                            right)
+            enemy-side                    (if (= my-side \w) \b \w)
+            enemy-starting-row            (if (= my-side \w) \7 \2)
+            enemy-pawn                    (cb/make-piece enemy-side \p)
+            column-we-are-moving-to       (cb/get-col (-> pos left-or-right))
+            enemy-home-pos                (cb/make-pos column-we-are-moving-to
+                                                       enemy-starting-row)
+            adjacent-pos                  (cb/make-pos column-we-are-moving-to
+                                                       current-row)
+            board                         (:board (peek app-state))
+            prev-board                    (:board (peek (rest app-state)))
+            
+            ;; To ensure that en-passant is possible, you have to check 4 conditions
+            ;; That on the previous move there was a pawn at home, that the home
+            ;; pawn is no longer there (confirming that it was the pawn that moved)
+            ;; That the previous move had an empty adjacent square, and that there
+            ;; is now an enemy pawn on that adjacent square.
+            prev-move-had-pawn-at-home    (= (cb/get-piece-on-pos enemy-home-pos
+                                                                  prev-board)
+                                             enemy-pawn)
+            home-pawn-is-now-gone         (= (cb/get-piece-on-pos enemy-home-pos
+                                                                  board) 
                                              :ee)
-
-            adjacent-now-has-enemy-pawn  (= (cb/get-piece-on-pos (cb/make-pos
-                                                                  (cb/get-col (-> pos left-or-right))
-                                                                  (cb/get-row pos))
-                                                                 (:board (peek app-state)))
-                                            (cb/make-piece enemy-side \p))]
+            prev-move-had-empty-adjacent  (= (cb/get-piece-on-pos  adjacent-pos
+                                                                  prev-board)
+                                            :ee)
+            adjacent-now-has-enemy-pawn   (= (cb/get-piece-on-pos adjacent-pos board)
+                                            enemy-pawn)]
         (and
          prev-move-had-pawn-at-home
          home-pawn-is-now-gone
          prev-move-had-empty-adjacent
-         adjacent-now-has-enemy-pawn))))))
+         adjacent-now-has-enemy-pawn)))))
 
-(defn is-castling [app-state side pos new-pos]
-)
+(defn is-castling [app-state side pos new-pos])
 
 
 ;; Path processing function for determining whether
@@ -586,23 +574,30 @@ and a unit"
                      })))
   
 ;; Move, top level interface to the chess engine
-;; takes a move in chess notation format, and an app state. 
+;; takes a move in chess notation format, and an app state.
 ;; if no app-state is provided, it is assumed that we're
 ;; dealing with a new game.
 (defn move 
   ([a-move]
      (do 
-       (print "In Move")
+       (print "In Move " a-move "should have printed move")
        (move a-move states/init-app-state)))
   ([a-move app-state]
+     (print "In Move " a-move "should have printed move")
      ;; Actually perform the move.
          (let [legal-moves (set (piece-moves app-state {:pos (:start-pos a-move)
                                                         :piece (:piece a-move) }))
                turn (:turn (peek app-state))
-;;               has-white-king-moved (if (= turn \w)) (has-king-moved
-;;               has-black-king-moved
-               ]
-           (print "In Move")
+               has-white-king-moved (if (and
+                                         (= turn \w)
+                                         (has-king-moved app-state a-move))
+                                      true
+                                      false)
+               has-black-king-moved (if (and
+                                         (= turn  \b)
+                                         (has-king-moved app-state a-move))
+                                      true
+                                      false)]
            (if (not (= turn (cb/get-side (:piece a-move))))
              (print "Wrong turn")
              (do 
