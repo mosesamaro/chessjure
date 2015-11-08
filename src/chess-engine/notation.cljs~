@@ -1,3 +1,0 @@
-(ns chess-engine.notation
-    (:require [chess-engine.board :as cb]
-              [chess-engine.engine :as engine]))
