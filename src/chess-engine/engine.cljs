@@ -43,18 +43,6 @@ it as a piece, column, row or takes"
                           (conj acc item)
                          )) [] notation-tokens)] tokens))
 
-;;(analyze-notation "Be4xc6")
-
-;;(cb/is-enemy? states/app-state \w :b8)
-
-;; Is the given position free, or is it an enemy
-;; Function is used to determine whether a piece
-;; can legally move into a given square.
-(defn is-free-or-enemy? [app-state my-side pos]
-      (if (nil? pos) false
-          (or (cb/is-free? app-state pos) 
-              (cb/is-enemy? app-state my-side pos))))
-
 (defn step [step-forward step-backward]
   "Takes two functions that modify the current pos. Returns a function
    that applies these function to the position depending on which side
@@ -121,7 +109,6 @@ it as a piece, column, row or takes"
                                                        current-row)
             board                         (:board (peek app-state))
             prev-board                    (:board (peek (rest app-state)))
-            
             ;; To ensure that en-passant is possible, you have to check 4 conditions
             ;; That on the previous move there was a pawn at home, that the home
             ;; pawn is no longer there (confirming that it was the pawn that moved)
@@ -144,8 +131,13 @@ it as a piece, column, row or takes"
          prev-move-had-empty-adjacent
          adjacent-now-has-enemy-pawn)))))
 
-(defn is-castling [app-state side pos new-pos])
-
+(defn is-castling [app-state side pos new-pos]
+"Rules for castling:
+ 1. King has not moved.
+ 2. All spaces between the king and the rook are empty. 
+ 3. The rook is there.
+ Other rules, like not moving through check, are handled elsewhere."
+  )
 
 ;; Path processing function for determining whether
 ;; a piece can move along a given path. Takes an 
@@ -155,52 +147,42 @@ it as a piece, column, row or takes"
 ;; after that square are not added to the final positions
 ;; list. Returns a list of positions in the positions
 ;; set that are valid, if any are.
-(defn is-free-or-enemy2 [app-state side positions]
-      (:pos
-      (let [is-free? (partial cb/is-free? app-state)
-            is-enemy? (partial cb/is-enemy? app-state side)]
-        (reduce (fn [acc curr]
-                  (cond 
-
-                   (nil? curr) { :blocked true, :pos (:pos acc) }
-
-                   (:blocked acc) acc
-
-                   (is-free? curr) { :blocked (:blocked acc), :pos (conj (:pos acc) curr) }
-
-                   (is-enemy? curr) { :blocked true, :pos (conj (:pos acc) curr) }
-
-                   :else            { :blocked true, :pos (:pos acc) }))
-
-                { :blocked  false, :pos  [] } positions))))
+(defn is-free-or-enemy [app-state side positions]
+  (:pos
+   (let [is-free?  (partial cb/is-free? app-state)
+         is-enemy? (partial cb/is-enemy? app-state side)]
+     (reduce (fn [acc curr]
+               (cond 
+                (nil? curr)      { :blocked true, :pos (:pos acc) }
+                (:blocked acc)   acc
+                (is-free? curr)  { :blocked (:blocked acc), :pos (conj (:pos acc) curr) }
+                (is-enemy? curr) { :blocked true, :pos (conj (:pos acc) curr) }
+                :else            { :blocked true, :pos (:pos acc) }))
+             { :blocked  false, :pos  [] } positions))))
 
 ;; Define legal set of bishop moves
 (defn bishop-moves [app-state unit]
   (let [pos (:pos unit)
         piece (:piece unit)
         side (cb/get-side piece)
-        [up down left right] (get-position-functions side app-state)
-;;        is-free-or-enemy? (partial is-free-or-enemy? app-state side)
-        ]
+        [up down left right] (get-position-functions side app-state)]
     (concat 
-     (is-free-or-enemy2 app-state side (path pos (comp up left)))
-     (is-free-or-enemy2 app-state side (path pos (comp up right)))
-     (is-free-or-enemy2 app-state side (path pos (comp down left)))
-     (is-free-or-enemy2 app-state side (path pos (comp down right))))))
+     (is-free-or-enemy app-state side (path pos (comp up left)))
+     (is-free-or-enemy app-state side (path pos (comp up right)))
+     (is-free-or-enemy app-state side (path pos (comp down left)))
+     (is-free-or-enemy app-state side (path pos (comp down right))))))
 
 ;; Define legal set of rook moves
 (defn rook-moves [app-state unit]
   (let [pos (:pos unit)
         piece (:piece unit)
         side (cb/get-side piece)
-        [up down left right] (get-position-functions side app-state)
-;;        is-free-or-enemy? (partial is-free-or-enemy? app-state side)
-        ]
+        [up down left right] (get-position-functions side app-state)]
     (concat 
-     (is-free-or-enemy2 app-state side (path pos up))
-     (is-free-or-enemy2 app-state side (path pos right))
-     (is-free-or-enemy2 app-state side (path pos left))
-     (is-free-or-enemy2 app-state side (path pos down)))))
+     (is-free-or-enemy app-state side (path pos up))
+     (is-free-or-enemy app-state side (path pos right))
+     (is-free-or-enemy app-state side (path pos left))
+     (is-free-or-enemy app-state side (path pos down)))))
 
 ;; Define legal set of queen moves
 (defn queen-moves [app-state unit]
@@ -215,43 +197,36 @@ and a unit"
         piece (:piece unit)
         side (cb/get-side piece)
         [up down left right] (get-position-functions side app-state)
-        is-free-or-enemy2 (partial is-free-or-enemy2 app-state side)
+        is-free-or-enemy (partial is-free-or-enemy app-state side)
         first-knight-path-elm (fn [dir1 dir2 dir3]
                                 (list (first (path pos (comp dir1 dir2 dir3)))))
         ]
     (concat 
-     (is-free-or-enemy2 (first-knight-path-elm up up left))
-     (is-free-or-enemy2 (first-knight-path-elm up up right))
-     (is-free-or-enemy2 (first-knight-path-elm up right right))
-     (is-free-or-enemy2 (first-knight-path-elm up left left))
-     (is-free-or-enemy2 (first-knight-path-elm down down right))
-     (is-free-or-enemy2 (first-knight-path-elm down down left))
-     (is-free-or-enemy2 (first-knight-path-elm down right right))
-     (is-free-or-enemy2 (first-knight-path-elm down left left)))))
+     (is-free-or-enemy (first-knight-path-elm up up left))
+     (is-free-or-enemy (first-knight-path-elm up up right))
+     (is-free-or-enemy (first-knight-path-elm up right right))
+     (is-free-or-enemy (first-knight-path-elm up left left))
+     (is-free-or-enemy (first-knight-path-elm down down right))
+     (is-free-or-enemy (first-knight-path-elm down down left))
+     (is-free-or-enemy (first-knight-path-elm down right right))
+     (is-free-or-enemy (first-knight-path-elm down left left)))))
 
 (defn king-moves [app-state unit]
   (let [pos (:pos unit)
         piece (:piece unit)
         side (cb/get-side piece)
         [up down left right] (get-position-functions side app-state)
-        is-free-or-enemy2 (partial is-free-or-enemy2 app-state side)]
+        is-free-or-enemy (partial is-free-or-enemy2 app-state side)]
     (concat
-     (is-free-or-enemy2 (list (first (path pos up))))
-     (is-free-or-enemy2 (list (first (path pos down))))
-     (is-free-or-enemy2 (list (first (path pos left))))
-     (is-free-or-enemy2 (list (first (path pos right))))
-     (is-free-or-enemy2 (list (first (path pos (comp up right)))))
-     (is-free-or-enemy2 (list (first (path pos (comp down right)))))
-     (is-free-or-enemy2 (list (first (path pos (comp down left)))))
-     (is-free-or-enemy2 (list (first (path pos (comp up left))))))))
+     (is-free-or-enemy (list (first (path pos up))))
+     (is-free-or-enemy (list (first (path pos down))))
+     (is-free-or-enemy (list (first (path pos left))))
+     (is-free-or-enemy (list (first (path pos right))))
+     (is-free-or-enemy (list (first (path pos (comp up right)))))
+     (is-free-or-enemy (list (first (path pos (comp down right)))))
+     (is-free-or-enemy (list (first (path pos (comp down left)))))
+     (is-free-or-enemy (list (first (path pos (comp up left))))))))
 
-;; (king-moves states/king-test-state {:pos :d4 :piece :wK})
-
-
-
-
-
-        
 ;; Pawns can move forward 1 or 2 squares if they are on their starting square
 ;; They can move 1 square forward if nothing is blocking them
 ;; They can attack diagnolly-forward one square
@@ -266,21 +241,14 @@ and a unit"
       [up down left right] (get-position-functions side app-state)
       is-free? (partial cb/is-free? app-state)
       is-enemy? (partial cb/is-enemy? app-state side)
-;;      is-en-passant? (partial is-en-passant? app-state side pos)
       partial-is-en-passant? (partial is-en-passant? app-state side pos)
-      can-move-diagnal ;;is-enemy-or-en-passant 
-       (do 
-                         (print "about to can-move-diagnal" app-state side pos)
-                         #(or (is-enemy? %) (partial-is-en-passant? %)))
-;;                         #(is-enemy? %)
+      can-move-diagnal #(or (is-enemy? %) (partial-is-en-passant? %))
       center-moves (if starting-square
                      (take 2 (take-while is-free? (path pos up)))
                      (take 1 (take-while is-free? (path pos up))))
       left-diag-move (take 1 (take-while can-move-diagnal (path pos (comp up left))))
-      right-diag-move (take 1 (take-while can-move-diagnal (path pos (comp up right))))
-      ]
-  (do
-  (concat center-moves left-diag-move right-diag-move))))
+      right-diag-move (take 1 (take-while can-move-diagnal (path pos (comp up right))))]
+  (concat center-moves left-diag-move right-diag-move)))
       
 ;; Notation processing function for simple pawn starts
 ;; We recieved a simple pawn start, like :e4
@@ -311,49 +279,41 @@ and a unit"
 
 ;; Notation processing function for complex pawn starts
 (defn process-complex-pawn-start [tokens res app-state]
-      (do 
-;;        (print (<< "In complex pawn start tokens: ~{tokens} res ~{res}"))
-        (let [
-            board (:board (peek app-state))
-            turn (:turn (peek app-state))
-            [up down left right] (get-position-functions turn app-state)
-            col (first tokens)
-            [start-col _ end-col end-row] tokens
-            end-pos (cb/make-pos end-col end-row)
-            ;; Is the start position to the left or right of the end position
-            left-or-right (if (> (cb/column-index end-col) (cb/column-index start-col)) left right)
-            maybe-start-pos (-> end-pos down left-or-right)
-            should-be-my-pawn (cb/get-piece-on-pos maybe-start-pos (:board (peek app-state)))
-            is-my-pawn (= should-be-my-pawn (cb/make-piece turn \p))
-              
-;;            moves into '() (pawn-moves app-state {:pos end-pos
-;;            moves (into '() (pawn-moves app-state {:pos end-pos :piece piece}))
-            ]
-        (do 
-;;          (prn (<< "turn ~{turn} col ~{col} pos ~{end-pos} start-col ~{start-col} end-col ~{end-col} ~{end-row} maybe-start-pos ~{maybe-start-pos} should-be-my-pawn ~{should-be-my-pawn} ~{tokens}"))
-          (if is-my-pawn (assoc res :end-pos end-pos :start-pos maybe-start-pos) 
-              nil)))))
+  (let [
+        board (:board (peek app-state))
+        turn (:turn (peek app-state))
+        [up down left right] (get-position-functions turn app-state)
+        col (first tokens)
+        [start-col _ end-col end-row] tokens
+        end-pos (cb/make-pos end-col end-row)
+        ;; Is the start position to the left or right of the end position
+        left-or-right (if (> (cb/column-index end-col) (cb/column-index start-col))
+                        left right)
+        maybe-start-pos (-> end-pos down left-or-right)
+        should-be-my-pawn (cb/get-piece-on-pos maybe-start-pos
+                                               (:board (peek app-state)))
+        is-my-pawn (= should-be-my-pawn (cb/make-piece turn \p))]
+    (if is-my-pawn
+      (assoc res :end-pos end-pos :start-pos maybe-start-pos) 
+      nil)))
 
 ;; Notation processing function for any kind of pawn start
 (defn process-pawn-start [tokens res app-state]
   "Processes a chess notation section that relates to the movement of a pawn"
-  (do 
-    (if (some #(= \x %) tokens)
-      (process-complex-pawn-start tokens res app-state)
-      (process-simple-pawn-start tokens res app-state))))
+  (if (some #(= \x %) tokens)
+    (process-complex-pawn-start tokens res app-state)
+    (process-simple-pawn-start tokens res app-state)))
 
 ;; Function for handling any kind of move, piece or pawn. Uses piece information
 ;; in unit to figure out what moves are legal.
 (defn piece-moves [app-state unit]
-  (do (print "In piece moves" unit))
   (let [piece (second (name (:piece unit)))]
-    (do (print "piece " piece))
-        (cond (= piece \R) (rook-moves app-state unit)
-              (= piece \B) (bishop-moves app-state unit)
-              (= piece \N) (knight-moves app-state unit)
-              (= piece \Q) (queen-moves app-state unit)
-              (= piece \p) (pawn-moves app-state unit)
-              (= piece \K) (king-moves app-state unit))))
+    (cond (= piece \R) (rook-moves app-state unit)
+          (= piece \B) (bishop-moves app-state unit)
+          (= piece \N) (knight-moves app-state unit)
+          (= piece \Q) (queen-moves app-state unit)
+          (= piece \p) (pawn-moves app-state unit)
+          (= piece \K) (king-moves app-state unit))))
  
 ;; Function for parsing notation when you're given notation in the form
 ;; [piece][pos][pos] Ex: Ba2b3
@@ -375,15 +335,14 @@ and a unit"
 (defn find-piece-candidates [notation tokens res app-state]
       (let [
             [piece-type end-pos] (map #(:token %) tokens)
-            foo (print "Piece type : " piece-type  " End pos "end-pos)
             piece (cb/make-piece (:turn (peek app-state)) piece-type)
-            maybe-start-pos (into [] (piece-moves app-state
-                                                   {:piece (cb/toggle-piece-side piece) :pos end-pos}))
+            maybe-start-pos
+            (into [] (piece-moves app-state
+                                  {:piece (cb/toggle-piece-side piece) :pos end-pos}))
             matching-start-pos 
             (into [] (filter #(= (cb/get-piece-on-pos %
                                                     (:board (peek app-state)))
-                                 piece) maybe-start-pos))
-            ]
+                                 piece) maybe-start-pos))]
           matching-start-pos))
 
 ;; Function that parses notation that contains a column or row, 
@@ -413,14 +372,11 @@ and a unit"
 (defn piece-pos [notation tokens res app-state]
   (let [[piece-type end-pos] (map #(:token %) tokens)
         candidate-positions (find-piece-candidates notation tokens res app-state)]
-    (do 
-;;      (print (<< "piece-type ~{piece-type} end-pos ~{end-pos}"))
     (if (not (= (count candidate-positions) 1))
       nil 
-      (assoc res :end-pos end-pos :start-pos (first candidate-positions))))))
+      (assoc res :end-pos end-pos :start-pos (first candidate-positions)))))
 
 (defn piece-takes-pos [notation tokens res app-state]
-;;  (do (print (<< "piece-takes-pos : notation ~{notation} tokens ~{tokens} res ~{res}"))
       (piece-pos 
        (into '[] (filter #(not (= \x %)) notation)) 
        (into '[] (filter #(not (= (:type %) :takes)) tokens))
@@ -438,7 +394,6 @@ and a unit"
 ;; piece x pos
 ;; O-O indicates castling
 ;; O-O-O indicates queenside castling
-
 (defn process-piece-start [notation res app-state]
   (let [tokens (analyze-notation notation)
         type-tokens (map #(:type %) tokens)
@@ -447,7 +402,7 @@ and a unit"
         (cond
          (= type-tokens '(:piece :takes :pos)) piece-takes-pos
          (= type-tokens '(:piece :pos)) piece-pos
-         (= type-tokens  '(:piece :pos :pos)) piece-pos-pos
+         (= type-tokens '(:piece :pos :pos)) piece-pos-pos
          (= type-tokens '(:piece :pos :takes :pos)) piece-pos-takes-pos
          (= type-tokens '(:piece :col :pos)) piece-col-pos
          (= type-tokens '(:piece :row :pos)) piece-row-pos
@@ -475,62 +430,41 @@ and a unit"
         (= "O-O-O" notation) :castle-queenside
         :else 
         (let [tokens (analyze-notation notation)
-              first-tok (first tokens)
-              ]
-          (do 
-            ;;(print "tokens " (str tokens) "first-tok " first-tok)
+              first-tok (first tokens)]
           (cond (= (:type first-tok) :piece)
                 (process-piece-start notation {:start-pos ""
-                                                    :piece first-tok
-                                                    :end-pos ""} app-state)
-                (or (= (:type first-tok) :pos)(= (:type first-tok) :col))
-                (do
-                  ;;(print (<< (vector (rest (rest tokens))) (apply cb/make-pos (map #(:token %) (take 2 tokens)))))
-                  (process-pawn-start ;;tokens
-                   notation
-                   ;;(apply board/make-pos (map #(:token %) (take 2 tokens)))
-                                      {:start-pos "", :piece \p, :end-pos ""}
-                                      app-state))
-                :else nil)))))
+                                               :piece first-tok
+                                               :end-pos ""} app-state)
+                (or (= (:type first-tok) :pos) (= (:type first-tok) :col))
+                (process-pawn-start 
+                 notation
+                 {:start-pos "", :piece \p, :end-pos ""}
+                 app-state)
+                :else nil))))
 
-
-;; (parse-notation "e3" init-app-state) ;; Simple 
-;; (parse-notation "exd4" pawn-test-state) ;; Complex pawn start
-;; (parse-notation "Bxd2" bishop-state)
-;; (parse-notation "Rxf7" rook-state)
-
-;;(process-pawn-start "exd4" nil        {:start-pos "", :piece \p, :end-pos ""} pawn-test-state)
-
-;; Respon
 (defn chess-notation-to-move [notation app-state]
   "Takes a string containing chess notation, and converts it into a move"
   (let [move-description (parse-notation notation app-state)
         turn (:turn (peek app-state))]
-    ;;(print (<< move-discription))))
     (assoc move-description :piece (cb/make-piece turn (:piece move-description)))))
 
-;;(chess-notation-to-move "e4" init-app-state)
-
 (defn is-in-check [notation app-state]
-  "Takes a notation and an app-state and deciedes whether you're in check"
-)
+  "Takes a notation and an app-state and deciedes whether you're in check")
 
-;; Takes a position and a board and returns the board with the given square empty
+;; Takes a position and a board and returns the board with the given square
+;; containing piece
 (defn set-square
   [pos board piece]
   ;; -8 because values are stored so that they're readable if you print out the board
-  ;; in the right order. 0 is the back row, 7 is the front row. 8 - row you want transforms
-  ;; your row-index into what you want.
-  (do (print "In set-square")
+  ;; in the right order. 0 is the back row, 7 is the front row. 8 - row
+  ;; transforms your row-index into what you want.
   (let [row-index (- 8 (js/parseInt (cb/get-row pos)))  ;; -8 because 
         ;; -1 because values from positions are 1-8 not 0-7
         col-index (- (js/parseInt (cb/column-index (cb/get-col pos))) 1)
-        row (do (print "row index in set square is :"  row-index) (nth board row-index))
-        new-row (do (print board row col-index row-index) (assoc row col-index piece))
-        new-board (do (print "new row should be : "new-row )(assoc board row-index new-row))]
-    (do 
-      (print "Col index in set-square " col-index)
-      new-board))))
+        row       (nth board row-index)
+        new-row   (assoc row col-index piece)
+        new-board (assoc board row-index new-row)]
+    new-board))
 
 ;; Function responsible for removing a pawn from the board
 ;; that was taken via en-passant. Returns a board.
@@ -538,40 +472,30 @@ and a unit"
   (let [pos (:start-pos a-move)
         new-pos (:end-pos a-move)
         piece (:piece a-move)
-        side  (cb/get-side piece)
-        ]
+        side  (cb/get-side piece)]
     (if (not (= (cb/get-piece piece) \p))
       (:board (peek app-state))
-      (do (print "In remove-pawn-en-passant")
       (if (is-en-passant? app-state side pos new-pos)
-        (do (print "printing remove pawn " (cb/make-pos (cb/get-col new-pos) (cb/get-row pos)))
-            (set-square
-             (cb/make-pos (cb/get-col new-pos) (cb/get-row pos))
-             (:board (peek app-state))
-             :ee))
-        (:board (peek app-state)))))))
+        (set-square
+         (cb/make-pos (cb/get-col new-pos) (cb/get-row pos))
+         (:board (peek app-state))
+         :ee)
+        (:board (peek app-state))))))
 
 ;; This maintains the :white-king-moved
 ;; and :black-king-moved flags. Necessary for
 ;; castling
 (defn has-king-moved [app-state a-move]
-  (if (= (cb/get-piece (:piece a-move) \k))
-    true
-    false))
-
+  (= (cb/get-piece (:piece a-move) \k)))
 
 ;; Create a new app-state
 (defn make-app-state [new-board app-state]
   (if (= new-board nil)
     (print "Move not legal in make-app-state")
-    (conj app-state {
-                     :board new-board,
+    (conj app-state {:board new-board,
                      :white-king-moved false,
                      :black-king-moved false,
-                     :turn (if (= (:turn (peek app-state)) \w) 
-                             \b 
-                             \w)
-                     })))
+                     :turn (if (= (:turn (peek app-state)) \w) \b \w)})))
   
 ;; Move, top level interface to the chess engine
 ;; takes a move in chess notation format, and an app state.
@@ -585,45 +509,30 @@ and a unit"
   ([a-move app-state]
      (print "In Move " a-move "should have printed move")
      ;; Actually perform the move.
-         (let [legal-moves (set (piece-moves app-state {:pos (:start-pos a-move)
-                                                        :piece (:piece a-move) }))
-               turn (:turn (peek app-state))
-               has-white-king-moved (if (and
-                                         (= turn \w)
-                                         (has-king-moved app-state a-move))
-                                      true
-                                      false)
-               has-black-king-moved (if (and
-                                         (= turn  \b)
-                                         (has-king-moved app-state a-move))
-                                      true
-                                      false)]
-           (if (not (= turn (cb/get-side (:piece a-move))))
-             (print "Wrong turn")
-             (do 
-               (if (contains? legal-moves (:end-pos a-move))
-                 (let
-                     [
-                      ;; If its an en-passant, remove the pawn being taken
-                      en-passant (remove-pawn-en-passant app-state a-move)
-                      
-                      ;; Empty the square the piece is moving from
-                      empty-start-square (do (print "empty start square calc ")
-                                             (set-square 
-                                              (:start-pos a-move) 
-                                              en-passant
-                                              :ee))
-
-                      ;; Overwrite the square we're moving to with the new piece
-                      moved-piece (do (print "empty start square " empty-start-square)
-                                      (set-square 
-                                       (:end-pos a-move) 
-                                       empty-start-square 
-                                       (:piece a-move)))
-
-                      ]
-                   (make-app-state moved-piece app-state))
-                 (print "Move not legal" (:end-pos a-move))))))))
+     (let [legal-moves (set (piece-moves app-state {:pos (:start-pos a-move)
+                                                    :piece (:piece a-move) }))
+           turn (:turn (peek app-state))
+           has-white-king-moved (and (= turn \w)  (has-king-moved app-state a-move))
+           has-black-king-moved (and (= turn \b) (has-king-moved app-state a-move))]
+       (if (not (= turn (cb/get-side (:piece a-move))))
+         (print "Wrong turn")
+         (if (contains? legal-moves (:end-pos a-move))
+           (let [;; If its an en-passant, remove the pawn being taken
+                 en-passant (remove-pawn-en-passant app-state a-move)
+                 ;; Empty the square the piece is moving from
+                 empty-start-square (do (print "empty start square calc ")
+                                        (set-square 
+                                         (:start-pos a-move) 
+                                         en-passant
+                                         :ee))
+                 ;; Overwrite the square we're moving to with the new piece
+                 moved-piece (do (print "empty start square " empty-start-square)
+                                 (set-square 
+                                  (:end-pos a-move) 
+                                  empty-start-square 
+                                  (:piece a-move)))]
+             (make-app-state moved-piece app-state))
+           (print "Move not legal" (:end-pos a-move)))))))
 
                    
 (defn notation-move [notation app-state]
