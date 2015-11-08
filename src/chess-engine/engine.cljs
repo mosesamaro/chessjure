@@ -5,7 +5,7 @@
 (enable-console-print!)
 
 ;; Introduction
-;; ================
+;; ============
 ;; This chess engine component is intended to determine validity of
 ;; moves. Its essentially a validation component
 
@@ -182,7 +182,7 @@ and a unit"
         piece (:piece unit)
         side (cb/get-side piece)
         [up down left right] (get-position-functions side app-state)
-        is-free-or-enemy (partial is-free-or-enemy2 app-state side)]
+        is-free-or-enemy (partial is-free-or-enemy app-state side)]
     (concat
      (is-free-or-enemy (list (first (path pos up))))
      (is-free-or-enemy (list (first (path pos down))))
@@ -264,16 +264,21 @@ and a unit"
 ;; This maintains the :white-king-moved
 ;; and :black-king-moved flags. Necessary for
 ;; castling
-(defn has-king-moved [app-state a-move]
-  (= (cb/get-piece (:piece a-move) \k)))
-
+(defn has-king-moved [a-move side]
+  (print "A move is " a-move "side is " side)
+  (and  (= (cb/get-piece (:piece a-move)) \K)
+        (= (cb/get-side (:piece a-move)) side)))
+      
 ;; Create a new app-state
-(defn make-app-state [new-board app-state]
+(defn make-app-state [a-move new-board app-state]
+  (print "New move in make-app-state" a-move)
   (if (= new-board nil)
     (print "Move not legal in make-app-state")
     (conj app-state {:board new-board,
-                     :white-king-moved false,
-                     :black-king-moved false,
+                     :white-king-moved (or  (:white-king-moved (peek app-state))
+                                            (has-king-moved a-move \w))
+                     :black-king-moved (or  (:black-king-moved (peek app-state))
+                                            (has-king-moved a-move \b)),
                      :turn (if (= (:turn (peek app-state)) \w) \b \w)})))
   
 ;; Move, top level interface to the chess engine
@@ -290,9 +295,7 @@ and a unit"
      ;; Actually perform the move.
      (let [legal-moves (set (piece-moves app-state {:pos (:start-pos a-move)
                                                     :piece (:piece a-move) }))
-           turn (:turn (peek app-state))
-           has-white-king-moved (and (= turn \w)  (has-king-moved app-state a-move))
-           has-black-king-moved (and (= turn \b) (has-king-moved app-state a-move))]
+           turn (:turn (peek app-state))]
        (if (not (= turn (cb/get-side (:piece a-move))))
          (print "Wrong turn")
          (if (contains? legal-moves (:end-pos a-move))
@@ -310,5 +313,5 @@ and a unit"
                                   (:end-pos a-move) 
                                   empty-start-square 
                                   (:piece a-move)))]
-             (make-app-state moved-piece app-state))
+             (make-app-state a-move moved-piece app-state))
            (print "Move not legal" (:end-pos a-move)))))))
