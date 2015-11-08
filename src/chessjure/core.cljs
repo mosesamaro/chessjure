@@ -7,6 +7,7 @@
     [chess-engine.states :as states]
     [chess-engine.board :as cb]
     [chess-engine.engine :as ce]
+    [chess-engine.notation :as notation]
     [clojure.string :as string]
     ))
 
@@ -159,14 +160,12 @@
      [:div
       [:input {:id "notation-box" :type "text"} ]
       [:button
-       {:on-click #(do 
-                     (print "In notation box")
-                     (swap! my-data assoc :app-state 
-                            (ce/move (ce/chess-notation-to-move
-                                      (aget 
-                                       (.getElementById js/document "notation-box") 
-                                       "value") app-state)
-                                     app-state)))} "submit"]]))
+       {:on-click #(swap! my-data assoc :app-state 
+                          (ce/move (notation/chess-notation-to-move
+                                    (aget 
+                                     (.getElementById js/document "notation-box") 
+                                     "value") app-state)
+                                   app-state))} "submit"]]))
 
 ;; Chess positions need to know what they are:
 (q/defcomponent board
@@ -195,9 +194,6 @@
               (.getElementById js/document "turn"))
     (q/render (king-moved (:app-state my-data))
               (.getElementById js/document "king-moved"))))
-
-
-
                  
 (add-watch my-data ::render
            (fn [_ _ _ data] (render data)))
