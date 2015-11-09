@@ -4,7 +4,7 @@ Welcome to Chessjure
 
 Chessjure is a work in progress chess application I've been writing to learn Clojure. 
 
-It is written using Clojurescript using the quiescent clojurescript react wrapper library. 
+It is written in Clojurescript using the quiescent clojurescript react wrapper library. 
 
 The application currently features 
 * Move validation
