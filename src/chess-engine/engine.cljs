@@ -98,36 +98,33 @@
          prev-move-had-empty-adjacent
          adjacent-now-has-enemy-pawn)))))
 
-(defn is-castling? 
+(defn is-castling-valid? 
 "Rules for castling:
  1. King has not moved.
  2. All spaces between the king and the rook are empty. 
  3. The rook is there.
  Other rules, like not moving through check, are handled elsewhere."
 [app-state side pos new-pos]
-(let [_ (print "In is-castling" pos new-pos)
-      king-side-castling           (= (cb/get-col new-pos) \g)
+(let [king-side-castling           (= (cb/get-col new-pos) \g)
       king-has-moved               (if (= side \w)
                                      (:white-king-moved (peek app-state))
                                      (:black-king-moved (peek app-state)))
       row                          (if (= side \w) \1 \8)
-      _ (print "After computing row")
       board                        (:board (peek app-state))
       castling-columns             (if king-side-castling [\f \g] [\b \c \d])
-      _ (print "After computing columns")
       empty-path                   (every? #(= :ee %)
                                            (map
                                             #(cb/get-piece-on-pos
-                                              (cb/make-pos % row) board) castling-columns))
-      _ (print "After computing empty-path" empty-path)
+                                              (cb/make-pos % row) board)
+                                            castling-columns))
       rook-col                     (if king-side-castling \h \a)
       rook-pos                     (cb/make-pos rook-col row)
-      _ (print "Rook-pos should be " rook-pos rook-col row (cb/make-pos "a" "4"))
-      rook-on-home-square          (= (cb/get-piece (cb/get-piece-on-pos rook-pos)) \R)
-      _ (print "About to leave let")]
-  (and (not king-has-moved
-            empty-path
-            rook-on-home-square))))
+      rook-on-home-square          (= (cb/get-piece
+                                       (cb/get-piece-on-pos rook-pos board))
+                                      \R)]
+  (and (not king-has-moved)
+       empty-path
+       rook-on-home-square)))
 
 ;; Path processing function for determining whether
 ;; a piece can move along a given path. Takes an 
@@ -202,20 +199,16 @@ and a unit"
      (is-free-or-enemy (first-knight-path-elm down left left)))))
 
 (defn king-moves [app-state unit]
-  (let [_ (print "In king moves")
-        pos                  (:pos unit)
+  (let [pos                  (:pos unit)
         piece                (:piece unit)
         side                 (cb/get-side piece)
         castling-positions   (if (= side \w) [:c1 :g1] [:c8 :g8])
         [up down left right] (get-position-functions side app-state)
         is-free-or-enemy     (partial is-free-or-enemy app-state side)
-        is-castling?          (partial is-castling? app-state side pos)
-        _ (print "After is-castling")
-        valid-castling-positions (filter #(is-castling? %) castling-positions)
-        _ (print "Valid castling positions are : " valid-castling-positions)]
+        is-castling-valid?          (partial is-castling-valid? app-state side pos)
+        valid-castling-positions (filter #(is-castling-valid? %) castling-positions)]
     (concat
      valid-castling-positions
-;;     (is-castling app-state side pos new-pos)
      (is-free-or-enemy (list (first (path pos up))))
      (is-free-or-enemy (list (first (path pos down))))
      (is-free-or-enemy (list (first (path pos left))))
@@ -297,7 +290,6 @@ and a unit"
 ;; and :black-king-moved flags. Necessary for
 ;; castling
 (defn has-king-moved [a-move side]
-  (print "A move is " a-move "side is " side)
   (and  (= (cb/get-piece (:piece a-move)) \K)
         (= (cb/get-side (:piece a-move)) side)))
       
@@ -312,6 +304,51 @@ and a unit"
                      :black-king-moved (or  (:black-king-moved (peek app-state))
                                             (has-king-moved a-move \b)),
                      :turn (if (= (:turn (peek app-state)) \w) \b \w)})))
+
+
+(defn is-promotion?
+  [app-state side pos new-pos]
+  false)
+
+(defn new-move
+  ([a-move]
+     (move app-move states/init-app-state))
+  ([a-move app-state]
+     (let
+         [side       (cb/get-side (:piece a-move))
+          start-pos  (:start-pos a-move)
+          end-pos    (:end-pos   a-move)]
+       ;; Determine what type of move it is
+       (cond (is-castling-valid? app-state side start-pos end-pos)
+             (castling-move a-move app-state)
+
+             (is-en-passant? app-state side start-pos end-pos)
+             (en-passant-move a-move app-state)
+
+             (is-promotion? app-state side start-pos end-pos)
+             (promotion-move a-move app-state)
+
+             :else (simple-move a-move app-state)))))
+
+;; Problem...
+
+;; I feel like en-passant, and castling information should not exist
+;; within move.
+
+;; Perhaps I need a move classifier, as well as typed move functions.
+
+;; So
+
+;; (defn move-classifier ...)
+;; (defn move-promotion)
+;; (defn move-simple)
+;; (defn move-pawn-en-passant)
+;; (defn move-castling)
+
+;; Then I could separately define the types of moves I'm making, and implement
+;; them separately.
+
+;; I think this makes sense. 
   
 ;; Move, top level interface to the chess engine
 ;; takes a move in chess notation format, and an app state.
@@ -328,23 +365,23 @@ and a unit"
      (let [legal-moves      (set (piece-moves app-state {:pos (:start-pos a-move)
                                                     :piece (:piece a-move) }))
            turn             (:turn (peek app-state))
-           is-king-move     (= )]
+           is-king-move     (= (cb/get-piece (:piece a-move)) \K)
+           
+           ;; Is it a castling move, if the king hasn't moved, and
+           ;; we're moving to a column like g or f, and
+           ;; is-castling-valid is valid, then its a castling move.
+           ;; This function takes
+           ]
        (if (not (= turn (cb/get-side (:piece a-move))))
          (print "Wrong turn")
          (if (contains? legal-moves (:end-pos a-move))
            (let [;; If its an en-passant, remove the pawn being taken
-                 en-passant (remove-pawn-en-passant app-state a-move)
+                 en-passant          (remove-pawn-en-passant app-state a-move)
                  ;; Empty the square the piece is moving from
-                 empty-start-square (do (print "empty start square calc ")
-                                        (set-square 
-                                         (:start-pos a-move) 
-                                         en-passant
-                                         :ee))
+                 empty-start-square  (set-square (:start-pos a-move) en-passant :ee)
                  ;; Overwrite the square we're moving to with the new piece
-                 moved-piece (do (print "empty start square " empty-start-square)
-                                 (set-square 
-                                  (:end-pos a-move) 
-                                  empty-start-square 
-                                  (:piece a-move)))]
+                 moved-piece         (set-square (:end-pos a-move)
+                                                 empty-start-square 
+                                                 (:piece a-move))]
              (make-app-state a-move moved-piece app-state))
            (print "Move not legal" (:end-pos a-move)))))))
