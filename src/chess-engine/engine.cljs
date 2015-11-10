@@ -310,7 +310,38 @@ and a unit"
   [app-state side pos new-pos]
   false)
 
-(defn new-move
+
+(defn simple-move
+  "Simple move, handles moves were a piece moves into a square. Basically it 
+just removes the piece from its original square and places it on the new end 
+square. Most moves are like this"
+  [a-move app-state]
+  (let [legal-moves         (set (piece-moves app-state {:pos (:start-pos a-move)
+                                                         :piece (:piece a-move) }))
+        turn                (:turn (peek app-state))
+        board               (:board (peek app-state))
+        ;; Note that set-square returns a board
+        empty-start-square  (set-square (:start-pos a-move) board :ee)
+        moved-piece         (set-square (:end-pos a-move)
+                                        empty-start-square 
+                                        (:piece a-move))]
+    (make-app-state a-move moved-piece app-state)))
+
+(defn castling-move
+  "A castling move, where both kings and rooks exchange places, and land on 
+squares dictated by the rules of chess"
+  [a-move app-state])
+
+(defn en-passant-move
+  "An en-passant move is strange in that it takes a piece, even though nothing 
+moves into its square"
+  [a-move app-state])
+
+(defn promotion-move
+  "A promotion move involves allowing a player to select a piece for promotion"
+  [a-move app-state])
+
+(defn move
   ([a-move]
      (move app-move states/init-app-state))
   ([a-move app-state]
@@ -354,34 +385,34 @@ and a unit"
 ;; takes a move in chess notation format, and an app state.
 ;; if no app-state is provided, it is assumed that we're
 ;; dealing with a new game.
-(defn move 
-  ([a-move]
-     (do 
-       (print "In Move " a-move "should have printed move")
-       (move a-move states/init-app-state)))
-  ([a-move app-state]
-     (print "In Move " a-move "should have printed move")
-     ;; Actually perform the move.
-     (let [legal-moves      (set (piece-moves app-state {:pos (:start-pos a-move)
-                                                    :piece (:piece a-move) }))
-           turn             (:turn (peek app-state))
-           is-king-move     (= (cb/get-piece (:piece a-move)) \K)
+;; (defn move 
+;;   ([a-move]
+;;      (do 
+;;        (print "In Move " a-move "should have printed move")
+;;        (move a-move states/init-app-state)))
+;;   ([a-move app-state]
+;;      (print "In Move " a-move "should have printed move")
+;;      ;; Actually perform the move.
+;;      (let [legal-moves      (set (piece-moves app-state {:pos (:start-pos a-move)
+;;                                                     :piece (:piece a-move) }))
+;;            turn             (:turn (peek app-state))
+;;            is-king-move     (= (cb/get-piece (:piece a-move)) \K)
            
-           ;; Is it a castling move, if the king hasn't moved, and
-           ;; we're moving to a column like g or f, and
-           ;; is-castling-valid is valid, then its a castling move.
-           ;; This function takes
-           ]
-       (if (not (= turn (cb/get-side (:piece a-move))))
-         (print "Wrong turn")
-         (if (contains? legal-moves (:end-pos a-move))
-           (let [;; If its an en-passant, remove the pawn being taken
-                 en-passant          (remove-pawn-en-passant app-state a-move)
-                 ;; Empty the square the piece is moving from
-                 empty-start-square  (set-square (:start-pos a-move) en-passant :ee)
-                 ;; Overwrite the square we're moving to with the new piece
-                 moved-piece         (set-square (:end-pos a-move)
-                                                 empty-start-square 
-                                                 (:piece a-move))]
-             (make-app-state a-move moved-piece app-state))
-           (print "Move not legal" (:end-pos a-move)))))))
+;;            ;; Is it a castling move, if the king hasn't moved, and
+;;            ;; we're moving to a column like g or f, and
+;;            ;; is-castling-valid is valid, then its a castling move.
+;;            ;; This function takes
+;;            ]
+;;        (if (not (= turn (cb/get-side (:piece a-move))))
+;;          (print "Wrong turn")
+;;          (if (contains? legal-moves (:end-pos a-move))
+;;            (let [;; If its an en-passant, remove the pawn being taken
+;;                  en-passant          (remove-pawn-en-passant app-state a-move)
+;;                  ;; Empty the square the piece is moving from
+;;                  empty-start-square  (set-square (:start-pos a-move) en-passant :ee)
+;;                  ;; Overwrite the square we're moving to with the new piece
+;;                  moved-piece         (set-square (:end-pos a-move)
+;;                                                  empty-start-square 
+;;                                                  (:piece a-move))]
+;;              (make-app-state a-move moved-piece app-state))
+;;            (print "Move not legal" (:end-pos a-move)))))))
