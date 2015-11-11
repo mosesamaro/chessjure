@@ -359,9 +359,13 @@ squares dictated by the rules of chess"
     (make-app-state a-move rook-moved app-state)))
 
 (defn en-passant-move
-  "An en-passant move is strange in that it takes a piece, even though nothing 
+  "An en-passant move is special in that it takes a piece, even though nothing 
 moves into its square"
-  [a-move app-state])
+  [a-move app-state]
+  (let [board               (:board (peek app-state))
+        pawn-taken (remove-pawn-en-passant app-state a-move)
+        pawn-moved (move-piece a-move pawn-taken)]
+    (make-app-state a-move pawn-moved app-state)))
 
 (defn promotion-move
   "A promotion move involves allowing a player to select a piece for promotion"
