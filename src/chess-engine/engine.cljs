@@ -270,6 +270,19 @@ and a unit"
         new-board (assoc board row-index new-row)]
     new-board))
 
+(defn move-piece
+  "This function handles the usual condition where you want to place a piece on 
+a new square and also remove it from its old square. Takes a move and a board, returns
+a new board"
+  [a-move board]
+  (let [start-pos                    (:start-pos a-move)
+        end-pos                      (:end-pos   a-move)
+        piece                        (:piece     a-move)
+        board-with-piece-at-end-pos  (set-square end-pos board piece)
+        board-with-prev-square-empty (set-square start-pos
+                                                 board-with-piece-at-end-pos :ee)]
+    board-with-prev-square-empty))
+
 ;; Function responsible for removing a pawn from the board
 ;; that was taken via en-passant. Returns a board.
 (defn remove-pawn-en-passant [app-state a-move]
@@ -330,7 +343,20 @@ square. Most moves are like this"
 (defn castling-move
   "A castling move, where both kings and rooks exchange places, and land on 
 squares dictated by the rules of chess"
-  [a-move app-state])
+  [a-move app-state]
+  (let [board                (:board (peek app-state))
+        king-side-castling?  (= (cb/get-col (:end-pos a-move)) \g)
+        side                 (:turn (peek app-state))
+        row                  (if (= side \w) \1 \8)
+        rook-start-col       (if king-side-castling? \h \a)
+        rook-end-col         (if king-side-castling? \f \d)
+        rook-start-pos       (cb/make-pos rook-start-col row)
+        rook-end-pos         (cb/make-pos rook-end-col row)
+        king-moved           (move-piece a-move board)
+        rook-moved           (move-piece {:start-pos rook-start-pos
+                                          :piece     (cb/make-piece side \R)
+                                          :end-pos   rook-end-pos}   king-moved)]
+    (make-app-state a-move rook-moved app-state)))
 
 (defn en-passant-move
   "An en-passant move is strange in that it takes a piece, even though nothing 
@@ -343,12 +369,13 @@ moves into its square"
 
 (defn move
   ([a-move]
-     (move app-move states/init-app-state))
+     (move a-move states/init-app-state))
   ([a-move app-state]
-     (let
-         [side       (cb/get-side (:piece a-move))
-          start-pos  (:start-pos a-move)
-          end-pos    (:end-pos   a-move)]
+     (let [side       (cb/get-side (:piece a-move))
+           start-pos  (:start-pos a-move)
+           end-pos    (:end-pos   a-move)
+           legal-moves      (set (piece-moves app-state {:pos (:start-pos a-move)
+                                                         :piece (:piece a-move) }))]
        ;; Determine what type of move it is
        (cond (is-castling-valid? app-state side start-pos end-pos)
              (castling-move a-move app-state)
@@ -359,7 +386,10 @@ moves into its square"
              (is-promotion? app-state side start-pos end-pos)
              (promotion-move a-move app-state)
 
-             :else (simple-move a-move app-state)))))
+             (contains? legal-moves (:end-pos a-move))
+             (simple-move a-move app-state)
+
+             :else (print "Move not legal")))))
 
 ;; Problem...
 
