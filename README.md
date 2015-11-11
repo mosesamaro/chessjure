@@ -9,15 +9,14 @@ It is written in Clojurescript using the quiescent clojurescript react wrapper l
 The application currently features 
 * Move validation
 * Common chess notation parsing, including infering where start positions are. For instance, moves like Nxe5 should work if only one knight can access e5. If two knights can access e5, such that the command is ambiguous, you specify that like Nd2e5 or Nd2xe5
-* En-Passant validation
-* Castling validation
+* En-Passant
+* Castling
 * A simple web based UI
 
 The following still need fixing:
 
 * Check analysis
 * Checkmate analysis
-* Castling
 * Promotion
 * A basic AI component
 
