@@ -307,22 +307,33 @@ a new board"
         (= (cb/get-side (:piece a-move)) side)))
       
 ;; Create a new app-state
-(defn make-app-state [a-move new-board app-state]
+(defn make-app-state [a-move new-board app-state is-promotion]
   (print "New move in make-app-state" a-move)
   (if (= new-board nil)
     (print "Move not legal in make-app-state")
-    (conj app-state {:board new-board,
-                     :white-king-moved (or  (:white-king-moved (peek app-state))
-                                            (has-king-moved a-move \w))
-                     :black-king-moved (or  (:black-king-moved (peek app-state))
-                                            (has-king-moved a-move \b)),
-                     :turn (if (= (:turn (peek app-state)) \w) \b \w)})))
-
-
-(defn is-promotion?
-  [app-state side pos new-pos]
-  false)
-
+    (let [turn          (:turn (peek app-state))
+          _ (print "In make-app-state" is-promotion)
+          _ (print "rest app-state " (rest app-state))
+          _ (print "Turn is : " turn)
+          new-app-state
+          {:board new-board,
+           :white-king-moved (or  (:white-king-moved (peek app-state))
+                                  (has-king-moved a-move \w))
+           :black-king-moved (or  (:black-king-moved (peek app-state))
+                                  (has-king-moved a-move \b)),
+           ;; Turn code is somewhat complicated, because promotions are
+           ;; modeled as turns (its your turn to pick your new piece)
+           :turn (if is-promotion
+                   :promotion
+                   (if (= turn :promotion)
+                     (do (print "About to do the peek thing")
+                         (if (= (:turn (peek (rest app-state))) \w) \b \w))
+                     (if (= turn \w) \b \w)))
+           
+           :promotion-pos (:end-pos a-move)}]
+      (print "After the let in make-app-state")
+      (print "New app-state is " new-app-state)
+      (conj app-state new-app-state))))
 
 (defn simple-move
   "Simple move, handles moves were a piece moves into a square. Basically it 
@@ -338,7 +349,8 @@ square. Most moves are like this"
         moved-piece         (set-square (:end-pos a-move)
                                         empty-start-square 
                                         (:piece a-move))]
-    (make-app-state a-move moved-piece app-state)))
+    (print "In simple-move")
+    (make-app-state a-move moved-piece app-state false)))
 
 (defn castling-move
   "A castling move, where both kings and rooks exchange places, and land on 
@@ -356,7 +368,8 @@ squares dictated by the rules of chess"
         rook-moved           (move-piece {:start-pos rook-start-pos
                                           :piece     (cb/make-piece side \R)
                                           :end-pos   rook-end-pos}   king-moved)]
-    (make-app-state a-move rook-moved app-state)))
+    (print "In castling move")
+    (make-app-state a-move rook-moved app-state false)))
 
 (defn en-passant-move
   "An en-passant move is special in that it takes a piece, even though nothing 
@@ -365,32 +378,58 @@ moves into its square"
   (let [board               (:board (peek app-state))
         pawn-taken (remove-pawn-en-passant app-state a-move)
         pawn-moved (move-piece a-move pawn-taken)]
-    (make-app-state a-move pawn-moved app-state)))
+    (print "In en-passant move")
+    (make-app-state a-move pawn-moved app-state false)))
+
+(defn is-promotion?
+  "If its a pawn, and its reached the last rank for its side,
+then it is due for promotion"
+  [app-state side pos new-pos]
+  (let [board         (:board (peek app-state))
+        piece         (cb/get-piece-on-pos pos board)
+        is-pawn       (= (cb/get-piece piece) \p)
+        side          (cb/get-side piece)
+        final-row     (if (=  side \w) \8 \1)
+        is-final-row  (= final-row (cb/get-row new-pos))]
+    (print "In is-promotion pos " pos " piece " piece " final row? " final-row
+           " row from piece " (cb/get-row new-pos) " is final row " is-final-row
+           " side " side
+           " get-piece-from pos " (cb/get-piece-on-pos pos board))
+    (and is-final-row is-pawn)))
 
 (defn promotion-move
   "A promotion move involves allowing a player to select a piece for promotion"
-  [a-move app-state])
+  [a-move app-state]
+  (print "Its a promotion")
+  (let [board (:board (peek app-state))
+        new-board (move-piece a-move board)]
+    ;; Set turn to promotion, let the promotion widget take care of the rest
+    (print "In promotion-move")
+    (make-app-state a-move new-board app-state true)))
 
 (defn move
   ([a-move]
      (move a-move states/init-app-state))
   ([a-move app-state]
-     (let [side       (cb/get-side (:piece a-move))
+     (let [turn       (:turn (peek app-state))
+           side       (cb/get-side (:piece a-move))
            start-pos  (:start-pos a-move)
            end-pos    (:end-pos   a-move)
            legal-moves      (set (piece-moves app-state {:pos (:start-pos a-move)
                                                          :piece (:piece a-move) }))]
-       ;; Determine what type of move it is
-       (cond (is-castling-valid? app-state side start-pos end-pos)
-             (castling-move a-move app-state)
+       (if (not (= turn side))
+         (print "Wrong turn")
+         ;; Determine what type of move it is
+         (cond (is-castling-valid? app-state side start-pos end-pos)
+               (castling-move a-move app-state)
 
-             (is-en-passant? app-state side start-pos end-pos)
-             (en-passant-move a-move app-state)
+               (is-en-passant? app-state side start-pos end-pos)
+               (en-passant-move a-move app-state)
 
-             (is-promotion? app-state side start-pos end-pos)
-             (promotion-move a-move app-state)
+               (is-promotion? app-state side start-pos end-pos)
+               (promotion-move a-move app-state)
 
-             (contains? legal-moves (:end-pos a-move))
-             (simple-move a-move app-state)
+               (contains? legal-moves (:end-pos a-move))
+               (simple-move a-move app-state)
 
-             :else (print "Move not legal")))))
+               :else (print "Move not legal"))))))

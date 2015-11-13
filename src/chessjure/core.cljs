@@ -66,27 +66,15 @@
   [my-data]
   (:app-state @my-data))
 
-(defn clickfn [row-num col]
-  (print "In clickfn")
+(defn board-click [row-num col]
   (let 
-      [_ (print "In beginning of let")
-       pos (make-pos-from-view col row-num)
-       _ (print "Made a position" pos)
+      [pos (make-pos-from-view col row-num)
        piece (cb/get-piece-on-pos pos (get-board my-data))
        turn (:turn (peek (get-app-state my-data)))
-       same-side-piece-on-pos (if (= (cb/get-side piece) turn) true false)
-       _ (print "At the end of the first let")
-       ]
+       same-side-piece-on-pos (if (= (cb/get-side piece) turn) true false)]
     (if (= (get-curr-pos @my-data) nil)
       ;; Here we process what happens when we don't have a position yet
-      (do 
-        (print "Pos is : " pos)
-        (print "piece is : " piece)
-        (print "Board is : " (get-board my-data))
-        (print (get-curr-pos @my-data))
-        (swap! my-data assoc :curr-selected {:pos pos :piece piece })
-        (print " :curr-selected is " (:curr-selected my-data)))
-
+      (swap! my-data assoc :curr-selected {:pos pos :piece piece })
       ;; Here we process what happens when we do have a position
       (let 
           [new-app-state (ce/move {:start-pos (get-curr-pos @my-data),
@@ -100,26 +88,28 @@
           (swap! my-data assoc :app-state     new-app-state
                                :curr-selected {:pos nil :piece nil}))))))
 
+(defn promotion-click
+  []
+  (let [])
+  )
+
  (q/defcomponent position 
    "Component representing a chess board position"
    [piece row-num col app-state]
    (html
     [:span
      {:class "piece" 
-      :on-click #(apply clickfn [row-num col])
+      :on-click #(apply board-click [row-num col])
       :id (str col row-num)}
      ;; :on-click
      (unicode-pieces piece)]))
 
 (defn undo [app-state]
   "Function responsible for performing undo"
-  (do (print "In undo" (rest app-state) " app-state " app-state)
   (let [new-app-state (rest app-state)]
     (if (= (count app-state) 1)
       (print "nothing to undo")
-      (swap! my-data assoc :app-state new-app-state)))))
-
-;;(rest '( {:foo "bar"} {:baz "qux"}))
+      (swap! my-data assoc :app-state new-app-state))))
 
 (q/defcomponent undo-button
   "Component responsible for undoing moves"
@@ -153,6 +143,43 @@
               "Black King " (say-whether-moved
                              (:black-king-moved (first app-state))))]))
 
+(defn promote-piece
+  [app-state piece]
+  (let [turn (:turn (peek app-state))
+        is-promotion (= turn :promotion)
+        promotion-pos (:promotion-pos (peek app-state))]
+    (if is-promotion
+      (let [board (:board (peek app-state))
+            new-board (ce/set-square promotion-pos board piece)
+            new-app-state (ce/make-app-state {:start-pos promotion-pos
+                                              :piece     piece
+                                              :end-pos   promotion-pos}
+                                             new-board
+                                             app-state
+                                             false)]
+        (swap! my-data assoc :app-state     new-app-state
+                             :curr-selected {:pos nil :piece nil})))))
+
+(q/defcomponent make-piece
+  [app-state piece]
+  (html [:span {:class "piece "
+                :on-click #(do
+                             (print "make-piece clicked")
+                             (promote-piece app-state piece))} (unicode-pieces piece)]))
+
+(q/defcomponent promotion-box
+  "Component responsible for displaying promotion selection choices"
+  [app-state]
+  (let [turn (:turn (peek app-state))
+        pieces (if (= turn :promotion)
+                 (if (= (:turn (peek (rest app-state))) \w) [:wQ :wR :wB :wN] [:bQ :bR :bB :bN])
+                 nil)
+        piece-elements (map #(make-piece app-state %) pieces)
+        _ (print "In promotion" piece-elements)]
+    
+    (html
+     [:div (str "Promotion: " ) piece-elements])))
+
 (q/defcomponent notation-box
   "Component responsible for reading in chess notation"
   [app-state]
@@ -176,7 +203,9 @@
      :class "chessboard"}
     (map (fn [row row-num] [:div
                     {:class "chess-row"}
-                  (map #(position %1 row-num %2 data) row ["A" "B" "C" "D" "E" "F" "G" "H"])
+                  (map #(position %1 row-num %2 data)
+                       row
+                       ["A" "B" "C" "D" "E" "F" "G" "H"])
                   ]) data [8 7 6 5 4 3 2 1])]))
 
 (defn render [my-data]
@@ -193,7 +222,9 @@
     (q/render (turn (:app-state my-data))
               (.getElementById js/document "turn"))
     (q/render (king-moved (:app-state my-data))
-              (.getElementById js/document "king-moved"))))
+              (.getElementById js/document "king-moved"))
+    (q/render (promotion-box (:app-state my-data))
+              (.getElementById js/document "promotion"))))
                  
 (add-watch my-data ::render
            (fn [_ _ _ data] (render data)))
