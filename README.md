@@ -11,13 +11,13 @@ The application currently features
 * Common chess notation parsing, including infering where start positions are. For instance, moves like Nxe5 should work if only one knight can access e5. If two knights can access e5, such that the command is ambiguous, you specify that like Nd2e5 or Nd2xe5
 * En-Passant
 * Castling
+* Promotion
 * A simple web based UI
 
 The following still need fixing:
 
 * Check analysis
 * Checkmate analysis
-* Promotion
 * A basic AI component
 
 To run chessjure, you'll need leiningen. 
