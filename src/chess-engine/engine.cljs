@@ -105,30 +105,35 @@
   2. All spaces between the king and the rook are empty. 
   3. The rook is there.
   Other rules, like not moving through check, are handled elsewhere."
-  [app-state {:keys [start-pos end-pos piece]} candidate-pos] ; move-candidate is a pos
-  (print  "In is-castling-valid?")
-  (let [side                         (cb/get-side piece)
-        king-side-castling           (= (cb/get-col candidate-pos) \g)
-        king-has-moved               (if (= side \w)
-                                       (:white-king-moved (peek app-state))
-                                       (:black-king-moved (peek app-state)))
-        row                          (if (= side \w) \1 \8)
-        board                        (:board (peek app-state))
-        castling-columns             (if king-side-castling [\f \g] [\b \c \d])
-        empty-path                   (every? #(= :ee %)
-                                             (map
-                                              #(cb/get-piece-on-pos
-                                                (cb/make-pos % row) board)
-                                              castling-columns))
-        rook-col                     (if king-side-castling \h \a)
-        rook-pos                     (cb/make-pos rook-col row)
-        rook-on-home-square          (= (cb/get-piece
-                                         (cb/get-piece-on-pos rook-pos board))
-                                        \R)]
-    (and (not king-has-moved)
-         empty-path
-         rook-on-home-square
-         (= piece (cb/get-piece-on-pos candidate-pos board)))))
+  [app-state {:keys [start-pos end-pos piece] :as a-move} candidate-pos] ; move-candidate is a pos
+  (print  "In is-castling-valid?" a-move "hmm...")
+  (if (= (cb/get-piece piece) \K)
+    (let [side                         (cb/get-side piece)
+          king-side-castling           (= (cb/get-col candidate-pos) \g)
+          king-has-moved               (if (= side \w)
+                                         (:white-king-moved (peek app-state))
+                                         (:black-king-moved (peek app-state)))
+          row                          (if (= side \w) \1 \8)
+          board                        (:board (peek app-state))
+          castling-columns             (if king-side-castling [\f \g] [\b \c \d])
+          _                            (print "Midway through is-castling-valid")
+          empty-path                   (every? #(= :ee %)
+                                               (map
+                                                #(cb/get-piece-on-pos
+                                                  (cb/make-pos % row) board)
+                                                castling-columns))
+          rook-col                     (if king-side-castling \h \a)
+          rook-pos                     (cb/make-pos rook-col row)
+          rook-on-home-square          (= (cb/get-piece
+                                           (cb/get-piece-on-pos rook-pos board))
+                                          \R)
+          _                            (print "nearly through is-castling-valid" start-pos board)
+          ]
+      (and (not king-has-moved)
+           empty-path
+           rook-on-home-square
+           (= piece (cb/get-piece-on-pos start-pos board))))
+    false))
 
 ;; Path processing function for determining whether
 ;; a piece can move along a given path. Takes an 
@@ -205,7 +210,8 @@ and a unit"
         [up down left right]     (get-position-functions side app-state)
         is-free-or-enemy         (partial is-free-or-enemy app-state side)
         is-castling-valid?       (partial is-castling-valid? app-state a-move)
-        valid-castling-positions (filter #(is-castling-valid? %) castling-positions)]
+        valid-castling-positions (filter #(is-castling-valid? %) castling-positions)
+        (print "Valid castling positions : " valid-castling-positions)]
     (concat
      valid-castling-positions
      (is-free-or-enemy (list (first (path start-pos up))))
@@ -247,14 +253,15 @@ and a unit"
 ;; Function for handling any kind of move, piece or pawn. Uses piece information
 ;; in unit to figure out what moves are legal.
 (defn piece-moves [app-state a-move]
-  (print "In piece-moves")
-  (let [piece (second (name (:piece a-move)))]
+  (print "In piece-moves" app-state a-move)
+  (let [piece (cb/get-piece (:piece a-move))]
     (cond (= piece \R) (rook-moves app-state a-move)
           (= piece \B) (bishop-moves app-state a-move)
           (= piece \N) (knight-moves app-state a-move)
           (= piece \Q) (queen-moves app-state a-move)
           (= piece \p) (pawn-moves app-state a-move)
-          (= piece \K) (king-moves app-state a-move))))
+          (= piece \K) (king-moves app-state a-move)
+          :else (print "Illegal move" piece))))
 
 (defn is-in-check 
   "Takes a notation and an app-state and deciedes whether you're in check"
@@ -268,8 +275,10 @@ and a unit"
         ;; If I can't find any such pieces, then I'm not in check.
         moves    (into [] (piece-moves app-state
                                        {:piece (cb/toggle-piece-side king)
-                                        :pos (first king-pos)}))]
-    (print "King pos is : " king-pos " side is : " side " king is : " king "Moves is : " moves)))
+                                        :start-pos (first king-pos)
+                                        :end-pos nil}))]
+    (print "King pos is : " king-pos " side is : " side " king is : " king "Moves is : " moves)
+    false))
 
 ;; Takes a position and a board and returns the board with the given square
 ;; containing piece
@@ -432,12 +441,14 @@ then it is due for promotion"
   ([a-move]
      (move a-move states/init-app-state))
   ([a-move app-state]
-   (print "In move")
+   (print "In move" a-move "should have just printed the move")
      (let [turn        (:turn (peek app-state))
            side        (cb/get-side (:piece a-move))
            start-pos   (:start-pos a-move)
            end-pos     (:end-pos   a-move)
-           legal-moves (set (piece-moves app-state a-move))]
+           legal-moves (set (piece-moves app-state a-move))
+           _ (print "Turn " turn "side " side)
+           ]
        (if (not (= turn side))
          (print "Wrong turn")
          ;; Determine what type of move it is
@@ -454,6 +465,7 @@ then it is due for promotion"
                    (promotion-move app-state a-move))
 
                (contains? legal-moves (:end-pos a-move))
-               (simple-move app-state a-move)
+               (do (print "Its a simple move")
+                   (simple-move app-state a-move))
 
                :else (print "Move not legal"))))))
