@@ -8,8 +8,7 @@
     [chess-engine.board :as cb]
     [chess-engine.engine :as ce]
     [chess-engine.notation :as notation]
-    [clojure.string :as string]
-    ))
+    [clojure.string :as string]))
 
 (enable-console-print!)
 
@@ -19,6 +18,8 @@
 ;; and the piece that is currently selected
 (def my-data (atom {:app-state states/init-app-state,
                     :curr-selected {:piece nil :pos nil}}))
+
+(print "Start of core")
 
 ;; Here are our pieces, using unicode characters for pieces
 (def unicode-pieces 
@@ -66,43 +67,51 @@
   [my-data]
   (:app-state @my-data))
 
+(print "Before board click")
+
 (defn board-click [row-num col]
+  (print "In board-click row-num col " row-num col)
   (let 
-      [pos (make-pos-from-view col row-num)
-       piece (cb/get-piece-on-pos pos (get-board my-data))
-       turn (:turn (peek (get-app-state my-data)))
-       same-side-piece-on-pos (if (= (cb/get-side piece) turn) true false)]
-    (if (= (get-curr-pos @my-data) nil)
+      [current-pos (make-pos-from-view col row-num)
+       stored-pos (get-curr-pos @my-data)
+       turn (:turn (peek (get-app-state my-data)))]
+    (if (= stored-pos nil)
       ;; Here we process what happens when we don't have a position yet
-      (swap! my-data assoc :curr-selected {:pos pos :piece piece })
+      (do (print "In do section" stored-pos current-pos)
+        (swap! my-data assoc :curr-selected {:pos current-pos :piece (cb/get-piece-on-pos current-pos (get-board my-data) )  }))
       ;; Here we process what happens when we do have a position
       (let 
-          [new-app-state (ce/move {:start-pos (get-curr-pos @my-data),
+          [_ (print "Middle of board col " col " row num " row-num)
+           _ (print "stored " stored-pos "current " current-pos)
+           piece (:piece (:curr-selected @my-data))
+           _ (print "Piece " piece)
+           new-app-state (ce/move {:start-pos stored-pos,
                                    :piece (:piece (:curr-selected @my-data)),
-                                   :end-pos (make-pos-from-view col row-num)}
-                                  (get-app-state my-data))]
+                                   :end-pos current-pos}
+                                  (get-app-state my-data))
+           _ (print "New app-state " new-app-state)
+;           piece (cb/get-piece-on-pos stored-pos (get-board my-data))
+           same-side-piece-on-pos (if (= (cb/get-side piece) turn) true false)
+           ]
         (if (= new-app-state nil)
           (if same-side-piece-on-pos
-            (swap! my-data assoc :curr-selected {:pos pos :piece piece})
-            (swap! my-data assoc :curr-selected {:pos nil :piece nil}))
+            (swap! my-data assoc :curr-selected {:pos current-pos :piece piece})
+            (swap! my-data assoc :curr-selected {:pos nil :piece (:piece (:curr-selected @my-data))}))
           (swap! my-data assoc :app-state     new-app-state
-                               :curr-selected {:pos nil :piece nil}))))))
+                 :curr-selected {:pos nil :piece nil}))))))
 
-(defn promotion-click
-  []
-  (let [])
-  )
+(print "After board-click")
 
- (q/defcomponent position 
-   "Component representing a chess board position"
-   [piece row-num col app-state]
-   (html
-    [:span
-     {:class "piece" 
-      :on-click #(apply board-click [row-num col])
-      :id (str col row-num)}
-     ;; :on-click
-     (unicode-pieces piece)]))
+(q/defcomponent position 
+  "Component representing a chess board position"
+  [piece row-num col app-state]
+  (html
+   [:span
+    {:class "piece" 
+     :on-click #(apply board-click [row-num col])
+     :id (str col row-num)}
+    ;; :on-click
+    (unicode-pieces piece)]))
 
 (defn undo [app-state]
   "Function responsible for performing undo"
@@ -163,9 +172,7 @@
 (q/defcomponent make-piece
   [app-state piece]
   (html [:span {:class "piece "
-                :on-click #(do
-                             (print "make-piece clicked")
-                             (promote-piece app-state piece))} (unicode-pieces piece)]))
+                :on-click #(promote-piece app-state piece)} (unicode-pieces piece)]))
 
 (q/defcomponent promotion-box
   "Component responsible for displaying promotion selection choices"
@@ -225,6 +232,8 @@
               (.getElementById js/document "king-moved"))
     (q/render (promotion-box (:app-state my-data))
               (.getElementById js/document "promotion"))))
+
+(print "About to render")
                  
 (add-watch my-data ::render
            (fn [_ _ _ data] (render data)))

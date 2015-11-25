@@ -1,5 +1,6 @@
 (ns chess-engine.board)
 
+(enable-console-print!)
 ;; The board representation, and associated functions
 
 ;; The board is represented by a 2D vector of keywords, here is an example
@@ -140,3 +141,26 @@
       (if (nil? pos) false
           (= (get-side (get-piece-on-pos pos (:board (peek app-state)))) 
              (if (= my-side \w) \b \w))))
+
+(defn get-pos-from-indexes
+  [y x]
+  (let [col (index-column (+ x 1))
+        row (- 8 y)]
+   (make-pos col row)))
+
+(defn find-pos-given-piece
+  [piece board]
+  (for [[i row] (map-indexed list board)
+        [j cell] (map-indexed list row)
+        :when (= piece cell)]
+    (get-pos-from-indexes i j)))
+
+(print "Find pos given piece : " (find-pos-given-piece :bp
+                                                       [[:bR :bN :bB :bQ :bK :bB :bN :bR]
+                                                        [:bp :bp :bp :bp :bp :bp :bp :bp]
+                                                        [:ee :ee :ee :ee :ee :ee :ee :ee]
+                                                        [:ee :ee :ee :ee :ee :ee :ee :ee]
+                                                        [:ee :ee :ee :ee :ee :ee :ee :ee]
+                                                        [:ee :ee :ee :ee :ee :ee :ee :ee]
+                                                        [:wp :wp :wp :wp :wp :wp :wp :wp]
+                                                        [:wR :wN :wB :wQ :wK :wB :wN :wR]]))
