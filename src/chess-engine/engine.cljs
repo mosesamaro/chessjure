@@ -179,9 +179,10 @@
      (is-free-or-enemy app-state side (path start-pos down)))))
 
 ;; Define legal set of queen moves
-(defn queen-moves [app-state unit]
-  (concat (rook-moves app-state unit)
-          (bishop-moves app-state unit)))
+(defn queen-moves
+  [app-state a-move]
+  (concat (rook-moves app-state a-move)
+          (bishop-moves app-state a-move)))
 
 (defn knight-moves [app-state {:keys [start-pos end-pos piece]}]
 "Not a Bob Seger song, but the allowed moves of a knight
@@ -255,16 +256,16 @@ and a unit"
 (defn piece-moves [app-state a-move]
   (print "In piece-moves" app-state a-move)
   (let [piece (cb/get-piece (:piece a-move))]
-    (cond (= piece \R) (rook-moves app-state a-move)
+    (cond (= piece \R) (rook-moves   app-state a-move)
           (= piece \B) (bishop-moves app-state a-move)
           (= piece \N) (knight-moves app-state a-move)
-          (= piece \Q) (queen-moves app-state a-move)
-          (= piece \p) (pawn-moves app-state a-move)
-          (= piece \K) (king-moves app-state a-move)
+          (= piece \Q) (queen-moves  app-state a-move)
+          (= piece \p) (pawn-moves   app-state a-move)
+          (= piece \K) (king-moves   app-state a-move)
           :else (print "Illegal move" piece))))
 
 (defn is-in-check 
-  "Takes a notation and an app-state and deciedes whether you're in check"
+  "Takes a notation and an app-state and decides whether you're in check"
   [app-state board side]
   (print "In is-in-check")
   (let [king     (cb/make-piece side \K)
@@ -273,11 +274,34 @@ and a unit"
         ;; and then examine all possible locations I can attack for that
         ;; type of piece.
         ;; If I can't find any such pieces, then I'm not in check.
-        moves    (into [] (piece-moves app-state
+        ;; king moves
+        king-moves    (into [] (piece-moves app-state
                                        {:piece (cb/toggle-piece-side king)
                                         :start-pos (first king-pos)
-                                        :end-pos nil}))]
-    (print "King pos is : " king-pos " side is : " side " king is : " king "Moves is : " moves)
+                                        :end-pos nil}))
+        
+        queen-moves   (into [] (piece-moves app-state
+                                            {:piece (cb/make-piece (cb/other-side side) \Q)
+                                             :start-pos (first king-pos)
+                                             :end-pos nil}))
+
+        piece-types   #{\K \Q \R \B \N \p}
+        in-check (or (map
+                      (fn [piece-type]
+                        (map #(is-piece-in-pos-set board piece-type
+                                                   (piece-moves app-state
+                                                                {:piece (cb/make-piece piece-type)
+                                                                 :start-pos (first king-pos)
+                                                                 :end-pos nil}))
+                             ) piece-types )))
+        
+        ;; queen moves
+        ;; rook moves
+        ;; bishop moves
+        ;; knight moves
+        ;; pawn moves
+        _ (print "Moves is : " king-moves queen-moves)
+        ]
     false))
 
 ;; Takes a position and a board and returns the board with the given square
@@ -337,9 +361,6 @@ a new board"
   (if (= new-board nil)
     (print "Move not legal in make-app-state")
     (let [turn          (:turn (peek app-state))
-          _ (print "In make-app-state" is-promotion)
-          _ (print "rest app-state " (rest app-state))
-          _ (print "Turn is : " turn)
           new-app-state
           {:board new-board,
            :white-king-moved (or  (:white-king-moved (peek app-state))
@@ -351,13 +372,11 @@ a new board"
            :turn (if is-promotion
                    :promotion
                    (if (= turn :promotion)
-                     (do (print "About to do the peek thing")
-                         (if (= (:turn (peek (rest app-state))) \w) \b \w))
+                     (if (= (:turn (peek (rest app-state))) \w) \b \w)
                      (if (= turn \w) \b \w)))
            
-           :promotion-pos (:end-pos a-move)}]
-      (print "After the let in make-app-state")
-      (print "New app-state is " new-app-state)
+           :promotion-pos (:end-pos a-move)
+           :curr-selected {:pos (:end-pos a-move) :piece (:piece a-move)}}]
       (conj app-state new-app-state))))
 
 (defn simple-move
@@ -365,7 +384,7 @@ a new board"
 just removes the piece from its original square and places it on the new end 
 square. Most moves are like this"
   [app-state {:keys [start-pos end-pos piece] :as a-move}]
-  (print "In simple move")
+  (print "Its a simple move")
   (let [legal-moves         (set (piece-moves app-state a-move))
         _                   (print "calculated legal moves")
         turn                (:turn (peek app-state))
@@ -373,7 +392,6 @@ square. Most moves are like this"
         ;; Note that set-square returns a board
         empty-start-square  (set-square start-pos board :ee)
         moved-piece         (set-square end-pos empty-start-square piece)]
-    (print "In simple-move")
     (if (is-in-check app-state moved-piece turn)
       (print "Can't move because of check")
       (make-app-state a-move moved-piece app-state false))))
@@ -382,6 +400,7 @@ square. Most moves are like this"
   "A castling move, where both kings and rooks exchange places, and land on 
 squares dictated by the rules of chess"
 [app-state {:keys [start-pos end-pos piece] :as a-move}]
+  (print "Its a castling move")
   (let [board                (:board (peek app-state))
         king-side-castling?  (= (cb/get-col end-pos) \g)
         side                 (:turn (peek app-state))
@@ -402,6 +421,7 @@ squares dictated by the rules of chess"
   "An en-passant move is special in that it takes a piece, even though nothing 
 moves into its square"
   [app-state {:keys [start-pos end-pos piece] :as a-move}]
+  (print "Its an en-passant-move")
   (let [board               (:board (peek app-state))
         pawn-taken          (remove-pawn-en-passant app-state a-move)
         side                (:turn (peek app-state))
@@ -420,17 +440,13 @@ then it is due for promotion"
         side          (cb/get-side piece)
         final-row     (if (=  side \w) \8 \1)
         is-final-row  (= final-row (cb/get-row candidate-move))]
-    (print "In is-promotion pos " start-pos " piece " piece " final row? " final-row
-           " row from piece " (cb/get-row end-pos) " is final row " is-final-row
-           " side " side
-           " get-piece-from pos " (cb/get-piece-on-pos start-pos board))
     (and is-final-row is-pawn)))
 
 
 (defn promotion-move
   "A promotion move involves allowing a player to select a piece for promotion"
   [app-state {:keys [start-pos end-pos piece] :as a-move}]
-  (print "Its a promotion")
+  (print "Its a promotion move")
   (let [board (:board (peek app-state))
         new-board (move-piece a-move board)]
     ;; Set turn to promotion, let the promotion widget take care of the rest
@@ -453,19 +469,15 @@ then it is due for promotion"
          (print "Wrong turn")
          ;; Determine what type of move it is
          (cond (is-castling-valid? app-state a-move (:end-pos a-move))
-               (do (print "Its a castling move")
-                   (castling-move app-state a-move))
+               (castling-move app-state a-move)
 
                (is-en-passant?  app-state a-move (:end-pos a-move))
-               (do (print "Its an en-passant move")
-                   (en-passant-move  app-state a-move))
+               (en-passant-move  app-state a-move)
 
                (is-promotion? app-state a-move (:end-pos a-move))
-               (do (print "Its a promotion move")
-                   (promotion-move app-state a-move))
+               (promotion-move app-state a-move)
 
                (contains? legal-moves (:end-pos a-move))
-               (do (print "Its a simple move")
-                   (simple-move app-state a-move))
+               (simple-move app-state a-move)
 
                :else (print "Move not legal"))))))

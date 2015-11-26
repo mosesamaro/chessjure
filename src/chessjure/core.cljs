@@ -48,10 +48,10 @@
 (defn get-curr-pos
   [my-data]
   (let 
-      [cpos (:curr-selected my-data)]
-    (if (= (:pos cpos) nil) 
+      [c-sel (:curr-selected my-data)]
+    (if (= (:pos c-sel) nil) 
       nil 
-      (cb/make-keyword (string/lower-case (first (name (:pos cpos)))) (second (name (:pos cpos)))))))
+      (cb/make-keyword (string/lower-case (first (name (:pos c-sel)))) (second (name (:pos c-sel)))))))
 
 (defn get-curr-piece 
   [my-data]
@@ -69,36 +69,39 @@
 
 (print "Before board click")
 
+
+;; Lets finally think through it.
+
+;; When a user selects a square, if the square contains a piece on his side,
+;; the square becomes selected
+
+;; If he then selects a square that he can go to (app-state is not null)
+;; Then the square becomes dropped. 
 (defn board-click [row-num col]
   (print "In board-click row-num col " row-num col)
   (let 
       [current-pos (make-pos-from-view col row-num)
        stored-pos (get-curr-pos @my-data)
-       turn (:turn (peek (get-app-state my-data)))]
-    (if (= stored-pos nil)
-      ;; Here we process what happens when we don't have a position yet
-      (do (print "In do section" stored-pos current-pos)
-        (swap! my-data assoc :curr-selected {:pos current-pos :piece (cb/get-piece-on-pos current-pos (get-board my-data) )  }))
-      ;; Here we process what happens when we do have a position
+       turn (:turn (peek (get-app-state my-data)))
+       side-of-selected-piece (cb/get-side (cb/get-piece-on-pos current-pos (get-board my-data)))]
+    (if (= side-of-selected-piece turn)
+      (swap! my-data assoc :curr-selected {:pos current-pos
+                                           :piece (cb/get-piece-on-pos current-pos
+                                                                       (get-board my-data))})
       (let 
-          [_ (print "Middle of board col " col " row num " row-num)
-           _ (print "stored " stored-pos "current " current-pos)
-           piece (:piece (:curr-selected @my-data))
-           _ (print "Piece " piece)
+          [piece (:piece (:curr-selected @my-data))
            new-app-state (ce/move {:start-pos stored-pos,
                                    :piece (:piece (:curr-selected @my-data)),
                                    :end-pos current-pos}
                                   (get-app-state my-data))
-           _ (print "New app-state " new-app-state)
-;           piece (cb/get-piece-on-pos stored-pos (get-board my-data))
-           same-side-piece-on-pos (if (= (cb/get-side piece) turn) true false)
-           ]
+           same-side-piece-on-pos (if (= (cb/get-side piece) turn) true false)]
         (if (= new-app-state nil)
-          (if same-side-piece-on-pos
-            (swap! my-data assoc :curr-selected {:pos current-pos :piece piece})
-            (swap! my-data assoc :curr-selected {:pos nil :piece (:piece (:curr-selected @my-data))}))
-          (swap! my-data assoc :app-state     new-app-state
-                 :curr-selected {:pos nil :piece nil}))))))
+          (swap! my-data assoc :curr-selected
+                 {:pos current-pos
+                  :piece (cb/get-piece-on-pos current-pos (get-board my-data))})
+          (swap! my-data assoc :app-state new-app-state :curr-selected
+                 {:pos current-pos
+                  :piece (cb/get-piece-on-pos current-pos (get-board my-data))}))))))
 
 (print "After board-click")
 

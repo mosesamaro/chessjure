@@ -94,6 +94,10 @@
     (make-piece \b (second (name piece)))
     (make-piece \w (second (name piece)))))
 
+(defn other-side
+  [side]
+  (if (=  side \w) \b \w))
+
 ;; Function for extracting the row from a position
 (def get-row second-keyword-char)
 
@@ -141,6 +145,12 @@
       (if (nil? pos) false
           (= (get-side (get-piece-on-pos pos (:board (peek app-state)))) 
              (if (= my-side \w) \b \w))))
+
+(defn is-piece-in-pos-set
+  [board piece pos-set]
+  (let [pieces-on-positions (map #(get-piece-on-pos % board) pos-set)
+        _ (print "Pieces on positions : " pieces-on-positions)]
+    (contains? pieces-on-positions piece)))
 
 (defn get-pos-from-indexes
   [y x]
