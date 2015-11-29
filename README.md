@@ -4,18 +4,7 @@ Welcome to Chessjure
 
 Chessjure is a work in progress chess application I've been writing to learn Clojure. 
 
-It is written in Clojurescript using the quiescent clojurescript react wrapper library. 
-
-The application currently features 
-* Move validation
-* Common chess notation parsing, including infering where start positions are. For instance, moves like Nxe5 should work if only one knight can access e5. If two knights can access e5, such that the command is ambiguous, you specify that like Nd2e5 or Nd2xe5
-* En-Passant
-* Castling
-* Promotion
-* A simple web based UI
-* Check analysis
-
-Pretty much all the validation is done aside from castling through check. After that's done, the app just needs an AI component.
+There's currently no AI, but you can run Chessjure and make moves for both sides. Currently Chessjure supports all chess rules except for castling through check.
 
 To run chessjure, you'll need leiningen. 
 
