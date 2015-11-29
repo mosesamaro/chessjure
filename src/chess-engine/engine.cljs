@@ -267,25 +267,28 @@ and a unit"
 (defn is-in-check 
   "Takes a notation and an app-state and decides whether you're in check"
   ;; For each piece type, this function checks a piece 
-  [app-state board side]
+  [app-state]
   (print "In is-in-check")
-  (let [king     (cb/make-piece side \K)
-        king-pos (cb/find-pos-given-piece king board)
-        piece-types   #{\K \Q \R \B \N}
+  (let [
+        side  (:turn (peek app-state))
         other-side    (cb/other-side side)
-        
-        in-check-by-piece-type (fn [piece-type]
-                                 (let [piece-moves
-                                       (into #{}
-                                             (piece-moves app-state ;; This is a problem
-                                                                    ;; Can't send it a board candidate 
-                                                          {:piece (cb/make-piece side piece-type)
-                                                           :start-pos (first king-pos)
-                                                           :end-pos nil}))]
-                                   (cb/is-piece-in-pos-set
-                                    board
-                                    (cb/make-piece other-side piece-type)
-                                    piece-moves)))
+        board (:board (peek app-state))
+        king     (cb/make-piece other-side \K)
+        king-pos (cb/find-pos-given-piece king board)
+        piece-types   #{\K \Q \R \B \N \p}
+        in-check-by-piece-type
+        (fn [piece-type]
+          (let [piece-moves
+                (into #{}
+                      (piece-moves app-state ;; This is a problem
+                                   ;; Can't send it a board candidate 
+                                   {:piece (cb/make-piece other-side piece-type)
+                                    :start-pos (first king-pos)
+                                    :end-pos nil}))]
+            (cb/is-piece-in-pos-set
+             board
+             (cb/make-piece side piece-type)
+             piece-moves)))
         results-by-piece-type (map in-check-by-piece-type piece-types)
         in-check (reduce #(or % %2) false results-by-piece-type)]
     in-check))
@@ -355,6 +358,7 @@ a new board"
                                   (has-king-moved a-move \b)),
            ;; Turn code is somewhat complicated, because promotions are
            ;; modeled as turns (its your turn to pick your new piece)
+           ;; so valid turns are \w \b and :promotion
            :turn (if is-promotion
                    :promotion
                    (if (= turn :promotion)
@@ -362,8 +366,13 @@ a new board"
                      (if (= turn \w) \b \w)))
            
            :promotion-pos (:end-pos a-move)
-           :curr-selected {:pos (:end-pos a-move) :piece (:piece a-move)}}]
-      (conj app-state new-app-state))))
+           :curr-selected {:pos (:end-pos a-move) :piece (:piece a-move)}}
+
+          finished-app-state (conj app-state new-app-state)
+          ]
+      (if (is-in-check finished-app-state)
+        (print "Can't move into check")
+        finished-app-state))))
 
 (defn simple-move
   "Simple move, handles moves were a piece moves into a square. Basically it 
@@ -378,9 +387,7 @@ square. Most moves are like this"
         ;; Note that set-square returns a board
         empty-start-square  (set-square start-pos board :ee)
         moved-piece         (set-square end-pos empty-start-square piece)]
-    (if (is-in-check app-state moved-piece turn)
-      (print "Can't move because of check")
-      (make-app-state a-move moved-piece app-state false))))
+    (make-app-state a-move moved-piece app-state false)))
 
 (defn castling-move
   "A castling move, where both kings and rooks exchange places, and land on 
@@ -399,9 +406,7 @@ squares dictated by the rules of chess"
         rook-moved           (move-piece {:start-pos rook-start-pos
                                           :piece     (cb/make-piece side \R)
                                           :end-pos   rook-end-pos}   king-moved)]
-    (if (is-in-check app-state rook-moved side)
-      (print "Can't move because of check")
-      (make-app-state a-move rook-moved app-state false))))
+    (make-app-state a-move rook-moved app-state false)))
 
 (defn en-passant-move
   "An en-passant move is special in that it takes a piece, even though nothing 
@@ -412,9 +417,7 @@ moves into its square"
         pawn-taken          (remove-pawn-en-passant app-state a-move)
         side                (:turn (peek app-state))
         pawn-moved (move-piece a-move pawn-taken)]
-    (if (is-in-check app-state pawn-moved side)
-      (print "Can't move because of check")
-      (make-app-state a-move pawn-moved app-state false))))
+    (make-app-state a-move pawn-moved app-state false)))
 
 (defn is-promotion?
   "If its a pawn, and its reached the last rank for its side,
@@ -436,7 +439,6 @@ then it is due for promotion"
   (let [board (:board (peek app-state))
         new-board (move-piece a-move board)]
     ;; Set turn to promotion, let the promotion widget take care of the rest
-    (print "In promotion-move")
     (make-app-state a-move new-board app-state true)))
 
 (defn move

@@ -96,7 +96,7 @@
 
 (defn other-side
   [side]
-  (if (=  side \w) \b \w))
+  (if (= side \w) \b \w))
 
 ;; Function for extracting the row from a position
 (def get-row second-keyword-char)
