@@ -148,7 +148,8 @@
 
 (defn is-piece-in-pos-set
   [board piece pos-set]
-  (let [pieces-on-positions (map #(get-piece-on-pos % board) pos-set)
+  (print "In piece in pos set, looking for a " piece " in " pos-set)
+  (let [pieces-on-positions (into #{} (map #(get-piece-on-pos % board) pos-set))
         _ (print "Pieces on positions : " pieces-on-positions)]
     (contains? pieces-on-positions piece)))
 

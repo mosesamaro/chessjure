@@ -266,43 +266,29 @@ and a unit"
 
 (defn is-in-check 
   "Takes a notation and an app-state and decides whether you're in check"
+  ;; For each piece type, this function checks a piece 
   [app-state board side]
   (print "In is-in-check")
   (let [king     (cb/make-piece side \K)
         king-pos (cb/find-pos-given-piece king board)
-        ;; For each piece type, I need to pretend that the king is that type,
-        ;; and then examine all possible locations I can attack for that
-        ;; type of piece.
-        ;; If I can't find any such pieces, then I'm not in check.
-        ;; king moves
-        king-moves    (into [] (piece-moves app-state
-                                       {:piece (cb/toggle-piece-side king)
-                                        :start-pos (first king-pos)
-                                        :end-pos nil}))
+        piece-types   #{\K \Q \R \B \N}
+        other-side    (cb/other-side side)
         
-        queen-moves   (into [] (piece-moves app-state
-                                            {:piece (cb/make-piece (cb/other-side side) \Q)
-                                             :start-pos (first king-pos)
-                                             :end-pos nil}))
-
-        piece-types   #{\K \Q \R \B \N \p}
-        in-check (or (map
-                      (fn [piece-type]
-                        (map #(is-piece-in-pos-set board piece-type
-                                                   (piece-moves app-state
-                                                                {:piece (cb/make-piece piece-type)
-                                                                 :start-pos (first king-pos)
-                                                                 :end-pos nil}))
-                             ) piece-types )))
-        
-        ;; queen moves
-        ;; rook moves
-        ;; bishop moves
-        ;; knight moves
-        ;; pawn moves
-        _ (print "Moves is : " king-moves queen-moves)
-        ]
-    false))
+        in-check-by-piece-type (fn [piece-type]
+                                 (let [piece-moves
+                                       (into #{}
+                                             (piece-moves app-state ;; This is a problem
+                                                                    ;; Can't send it a board candidate 
+                                                          {:piece (cb/make-piece side piece-type)
+                                                           :start-pos (first king-pos)
+                                                           :end-pos nil}))]
+                                   (cb/is-piece-in-pos-set
+                                    board
+                                    (cb/make-piece other-side piece-type)
+                                    piece-moves)))
+        results-by-piece-type (map in-check-by-piece-type piece-types)
+        in-check (reduce #(or % %2) false results-by-piece-type)]
+    in-check))
 
 ;; Takes a position and a board and returns the board with the given square
 ;; containing piece
