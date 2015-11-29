@@ -13,12 +13,9 @@ The application currently features
 * Castling
 * Promotion
 * A simple web based UI
-
-The following still need fixing:
-
 * Check analysis
-* Checkmate analysis
-* A basic AI component
+
+Pretty much all the validation is done aside from castling through check. After that's done, the app just needs an AI component.
 
 To run chessjure, you'll need leiningen. 
 
