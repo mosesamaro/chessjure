@@ -59,9 +59,7 @@
 
 (defn get-board 
   [my-data]
-  (do 
-    (print "Here's the data in get-board " @my-data)
-    (:board (first (:app-state @my-data)))))
+  (:board (first (:app-state @my-data))))
 
 (defn get-app-state
   [my-data]
@@ -89,7 +87,8 @@
                                            :piece (cb/get-piece-on-pos current-pos
                                                                        (get-board my-data))})
       (let 
-          [piece (:piece (:curr-selected @my-data))
+          [_ (print "Printing mydata in board-click" @my-data)
+           piece (:piece (:curr-selected @my-data))
            new-app-state (ce/move {:start-pos stored-pos,
                                    :piece (:piece (:curr-selected @my-data)),
                                    :end-pos current-pos}
