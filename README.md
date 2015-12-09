@@ -4,7 +4,7 @@ Welcome to Chessjure
 
 Chessjure is a work in progress chess application I've been writing to learn Clojure. 
 
-There are bugs, and the AI is dumb as rocks, but you can run Chessjure and mostly play something resembling a chess.
+There are bugs, and the AI is dumb as rocks, but you can run Chessjure and mostly play something resembling chess. =)
 
 To run chessjure, you'll need leiningen. 
 
