@@ -8,6 +8,7 @@
     [chess-engine.board :as cb]
     [chess-engine.engine :as ce]
     [chess-engine.notation :as notation]
+    [chess-engine.search   :as search]
     [clojure.string :as string]))
 
 (enable-console-print!)
@@ -18,8 +19,6 @@
 ;; and the piece that is currently selected
 (def my-data (atom {:app-state states/init-app-state,
                     :curr-selected {:piece nil :pos nil}}))
-
-(print "Start of core")
 
 ;; Here are our pieces, using unicode characters for pieces
 (def unicode-pieces 
@@ -65,9 +64,6 @@
   [my-data]
   (:app-state @my-data))
 
-(print "Before board click")
-
-
 ;; Lets finally think through it.
 
 ;; When a user selects a square, if the square contains a piece on his side,
@@ -76,7 +72,6 @@
 ;; If he then selects a square that he can go to (app-state is not null)
 ;; Then the square becomes dropped. 
 (defn board-click [row-num col]
-  (print "In board-click row-num col " row-num col)
   (let 
       [current-pos (make-pos-from-view col row-num)
        stored-pos (get-curr-pos @my-data)
@@ -87,8 +82,7 @@
                                            :piece (cb/get-piece-on-pos current-pos
                                                                        (get-board my-data))})
       (let 
-          [_ (print "Printing mydata in board-click" @my-data)
-           piece (:piece (:curr-selected @my-data))
+          [piece (:piece (:curr-selected @my-data))
            new-app-state (ce/move {:start-pos stored-pos,
                                    :piece (:piece (:curr-selected @my-data)),
                                    :end-pos current-pos}
@@ -101,8 +95,6 @@
           (swap! my-data assoc :app-state new-app-state :curr-selected
                  {:pos current-pos
                   :piece (cb/get-piece-on-pos current-pos (get-board my-data))}))))))
-
-(print "After board-click")
 
 (q/defcomponent position 
   "Component representing a chess board position"
@@ -125,12 +117,10 @@
 (q/defcomponent undo-button
   "Component responsible for undoing moves"
   [app-state]
-  (do 
-    (print "App state in undo-button " app-state)
-    (html
-     [:div
-      [:button
-       {:on-click #(undo app-state)} "undo"]])))
+  (html
+   [:div
+    [:button
+     {:on-click #(undo app-state)} "undo"]]))
 
 (q/defcomponent turn
   "Component responsible for displaying whose turn it is"
@@ -183,8 +173,7 @@
         pieces (if (= turn :promotion)
                  (if (= (:turn (peek (rest app-state))) \w) [:wQ :wR :wB :wN] [:bQ :bR :bB :bN])
                  nil)
-        piece-elements (map #(make-piece app-state %) pieces)
-        _ (print "In promotion" piece-elements)]
+        piece-elements (map #(make-piece app-state %) pieces)]
     
     (html
      [:div (str "Promotion: " ) piece-elements])))
@@ -219,9 +208,7 @@
 
 (defn render [my-data]
   (do 
-    (print "init app-state is " states/init-app-state)
-    (print "App state is : " my-data)
-    (print "Rendering the board " (:board (first (:app-state my-data))))
+    (print "Rendering")
     (q/render (board (:board (first (:app-state my-data))))
               (.getElementById js/document "board-area"))
     (q/render (undo-button (:app-state my-data))
@@ -241,3 +228,7 @@
            (fn [_ _ _ data] (render data)))
 
 (defonce *whatever (render @my-data));; initial render
+
+(print "About to watch for black's turn")
+(search/watch-for-blacks-turn my-data)
+(print "Should be done with core")
