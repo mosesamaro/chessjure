@@ -3,19 +3,6 @@
             [chess-engine.board :as cb]
             [chess-engine.evaluation :as fit]))
 
-(defn get-all-pieces
-  "Foo"
-  [] (print "Stub"))
-
-(defn get-all-possible-moves
-  "Bar"
-  [app-state]
-  (let [] (print "Stub")))
-
-(defn get-scores-for-all-possible-moves
-  [] (print "Stub"))
-
-
 (defn enemy-move
   [app-state]
   (print "In enemy-move"))
@@ -27,9 +14,10 @@ in check... its checkmate"
   (print "In select first app-state not in check")
   (loop [app-state (first app-states)
          app-states (rest app-states)]
+    (print "Checking an app-state")
     (if (not (nil? app-state))
       (if (ce/is-in-check app-state)
-        (recur (first (rest app-states)) (rest (rest app-states)))
+        (recur (first app-states)  (rest app-states))
         app-state)
       nil)))
 
@@ -87,6 +75,4 @@ in check... its checkmate"
                            not-in-check  (select-first-app-state-not-in-check sorted-app-states)
                            ]
                        (swap! my-data assoc :app-state not-in-check)
-                       (print "Should only fire on black's turn")))))))
-
-  )
+                       (print "Should only fire on black's turn"))))))))

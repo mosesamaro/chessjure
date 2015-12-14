@@ -110,7 +110,7 @@
 
 (defn undo [app-state]
   "Function responsible for performing undo"
-  (let [new-app-state (rest app-state)]
+  (let [new-app-state (rest (rest app-state))]
     (if (= (count app-state) 1)
       (print "nothing to undo")
       (swap! my-data assoc :app-state new-app-state))))

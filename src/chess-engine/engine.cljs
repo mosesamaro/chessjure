@@ -180,11 +180,15 @@ validating if the move is possible before calling move-piece"
         other-side    (cb/other-side side)
         board (:board (peek app-state))
         king     (cb/make-piece other-side \K)
+        _        (print "About to calculate king-pos" king board app-state)
         king-pos (cb/find-pos-given-piece king board)
+        _        (print "King pos after creation " king-pos)
         piece-types   #{\K \Q \R \B \N \p}
         _             (print "In is-in-check, examining possible check positions")
+        
         in-check-by-piece-type
         (fn [piece-type]
+          (print "King pos is " king-pos)
           (let [piece-moves
                 (into #{}
                       (piece-moves app-state ;; This is a problem
@@ -197,7 +201,9 @@ validating if the move is possible before calling move-piece"
              (cb/make-piece side piece-type)
              piece-moves)))
 
+        _ (print "Got function for checking piece by type")
         results-by-piece-type (map in-check-by-piece-type piece-types)
+        _ (print "Got results by piece type")
         in-check (reduce #(or % %2) false results-by-piece-type)
         _              (print "In is-in-checks, done examining possible check positions" in-check)]
     in-check))
@@ -209,7 +215,7 @@ validating if the move is possible before calling move-piece"
   2. All spaces between the king and the rook are empty. 
   3. The rook is there.
   4. Can't move through check"
-  [app-state {:keys [start-pos end-pos piece] :as a-move} candidate-pos] ; move-candidate is a pos
+  [app-state {:keys [start-pos end-pos piece] :as a-move} candidate-pos] ; candidate-pos is a pos
   (print  "In is-castling-valid?" a-move "hmm...")
   (if (and (or (= start-pos :e1) (= start-pos :e8))
            (= (cb/get-piece piece) \K))
@@ -236,7 +242,9 @@ validating if the move is possible before calling move-piece"
       ;; an empty path or the rook isn't on home square
       (if (and  rook-on-home-square empty-path (not king-has-moved)
                 (= piece (cb/get-piece-on-pos start-pos board)))
-        (let [king-start                   (cb/make-pos \e row)
+        (let [
+              _ (print "Validating Castling For move " start-pos piece candidate-pos )
+              king-start                   (cb/make-pos \e row)
               ;; Squares \b and \g will be handled by the normal check testing mechanism
               ;; since the final board will place the king on those squares if castling works
 
@@ -249,8 +257,10 @@ validating if the move is possible before calling move-piece"
                                  new-board  (move-piece a-move (:board (peek app-state)))]
                              (make-app-state a-move new-board app-state false))
                           king-path-positions)
-              path-not-in-check (reduce #(or  % (is-in-check %2)) false app-states)]
-          path-not-in-check)
+              path-not-in-check (reduce #(or  % (is-in-check %2)) false app-states)
+              _ (print "In is-castling-valid? about to say that  " a-move " is " path-not-in-check)
+              ] 
+          (not path-not-in-check))
         false))
     false))
 
@@ -349,7 +359,7 @@ and a unit"
   or piece and its position) and returns a sequence containing all
   squares the unit can move to"
   [app-state {:keys [start-pos end-pos piece] :as a-move}]
-  (print "In pawn-moves")
+  (print "In pawn-moves" a-move)
   (let [side                    (cb/get-side piece)
         starting-square         (= (cb/get-row start-pos) (if (= side \w) \2 \7))
         [up down left right]    (get-position-functions side app-state)
@@ -525,7 +535,7 @@ it returns a new app state with the move applied to it"
                                    (contains? legal-moves (:end-pos a-move))
                                    (simple-move app-state a-move)
 
-                                   :else (print "Move not legal"))]
-           (if (is-in-check new-app-state)
+                                   :else (print "Move not legal" a-move))]
+           (if (and (not (nil? new-app-state)) (is-in-check new-app-state))
              (print "Can't move in check")
              new-app-state))))))
