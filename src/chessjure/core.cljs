@@ -18,7 +18,8 @@
 ;; a map containing a list of application states.
 ;; and the piece that is currently selected
 (def my-data (atom {:app-state states/init-app-state,
-                    :curr-selected {:piece nil :pos nil}}))
+                    :curr-selected {:piece nil :pos nil}
+                    :free-mode false}))
 
 ;; Here are our pieces, using unicode characters for pieces
 (def unicode-pieces 
@@ -206,6 +207,18 @@
                        ["A" "B" "C" "D" "E" "F" "G" "H"])
                   ]) data [8 7 6 5 4 3 2 1])]))
 
+(q/defcomponent free-mode
+  [data]
+  (html
+   [:div
+    [:span "Free mode "]
+    [:input {:id "free-mode"
+             :type "checkbox"
+             :on-click (fn []
+                         (if (:free-mode @my-data)
+                           (swap! my-data assoc :free-mode false)
+                           (swap! my-data assoc :free-mode true)))}]]))
+
 (defn render [my-data]
   (do 
     (print "Rendering")
@@ -220,7 +233,9 @@
     (q/render (king-moved (:app-state my-data))
               (.getElementById js/document "king-moved"))
     (q/render (promotion-box (:app-state my-data))
-              (.getElementById js/document "promotion"))))
+              (.getElementById js/document "promotion"))
+    (q/render (free-mode my-data)
+              (.getElementById js/document "free-mode"))))
 
 (print "About to render")
                  

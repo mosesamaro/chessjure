@@ -4,7 +4,7 @@
 
 (def force-map
   {
-   \K 0.0
+   \K 100.0
    \Q 9.0
    \R 5.0
    \B 3.0
@@ -17,10 +17,12 @@
 
 (defn force-count
   [app-state]
+  (print "In force-count" app-state)
   (let [turn          (:turn (peek app-state))
-        all-pieces    (cb/find-in-board (:board (peek app-state))
-                                  #(not (= % :ee)))
-
+        _             (print "About to print all-pieces")
+        board         (:board (peek app-state))
+        _             (print "Board is : " board)
+        all-pieces    (cb/find-in-board #(not (= % :ee)) board)
         _ (print "all-pieces" all-pieces)
         black-force (map #(force-map (cb/get-piece (first %)))
                           (filter #(= (cb/get-side (first %)) \b) all-pieces))
@@ -31,8 +33,15 @@
         _ (print "Force count : " force-count)]
     force-count))
 
+(defn space-count
+  [app-state]
+  (let [turn (:turn (peek app-state))
+        
+        ]))
+
 (defn evaluate
   [app-state]
+  (print "In evaluate")
   (let [force-count (force-count app-state)]
     force-count))
 

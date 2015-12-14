@@ -148,9 +148,7 @@
 
 (defn is-piece-in-pos-set
   [board piece pos-set]
-  (print "In piece in pos set, looking for a " piece " in " pos-set)
-  (let [pieces-on-positions (into #{} (map #(get-piece-on-pos % board) pos-set))
-        _ (print "Pieces on positions : " pieces-on-positions)]
+  (let [pieces-on-positions (into #{} (map #(get-piece-on-pos % board) pos-set))]
     (contains? pieces-on-positions piece)))
 
 (defn get-pos-from-indexes
@@ -166,12 +164,22 @@
         :when (= piece cell)]
     (get-pos-from-indexes i j)))
 
-(print "Find pos given piece : " (find-pos-given-piece :bp
-                                                       [[:bR :bN :bB :bQ :bK :bB :bN :bR]
-                                                        [:bp :bp :bp :bp :bp :bp :bp :bp]
-                                                        [:ee :ee :ee :ee :ee :ee :ee :ee]
-                                                        [:ee :ee :ee :ee :ee :ee :ee :ee]
-                                                        [:ee :ee :ee :ee :ee :ee :ee :ee]
-                                                        [:ee :ee :ee :ee :ee :ee :ee :ee]
-                                                        [:wp :wp :wp :wp :wp :wp :wp :wp]
-                                                        [:wR :wN :wB :wQ :wK :wB :wN :wR]]))
+(defn find-all-pieces-of-side
+  "This function returns all pieces for a given side. The return value is 
+structured as [piece pos]"
+  [board side]
+  (print "In find all pieces of side")
+  (for [[i row]   (map-indexed list board)
+        [j cell]  (map-indexed list row)
+        :when (= (get-side cell) side)]
+    [cell  (get-pos-from-indexes i j)]))
+
+(defn find-in-board
+  "This function finds anything in the board given a predicate. Predicate function
+is passed the contents of each cell (either a piece or :ee)"
+  [predicate board]
+  (print "In find-in-board")
+  (for [[i row]   (map-indexed list board)
+        [j cell]  (map-indexed list row)
+        :when (predicate cell)]
+    [cell  (get-pos-from-indexes i j)]))
